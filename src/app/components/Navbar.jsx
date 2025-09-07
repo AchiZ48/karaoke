@@ -1,0 +1,36 @@
+"use client"
+
+import React from 'react'
+import Link from 'next/link'
+import { signOut } from 'next-auth/react'
+
+function Navbar({session}) {
+    const role = session?.user?.role;
+    console.log(role);
+  return (
+    <nav className='bg-black text-white p-3'>
+        <div className="container mx-auto">
+            <div className='flex justify-between item-center'>
+                <div>
+                    <Link href="/">BorntoSing</Link>
+                </div>
+                <ul className='flex '>
+                    {!session ? (
+                        <>
+                            <li className='m-3'><Link href="/login">Sign In</Link></li>
+                            <li className='m-3'><Link href="/register">Sign Up</Link></li>
+                        </>                        
+                    ):(
+                        <>
+                            <li className='m-3'><a  href='/welcome' className='bg-grey-500 text-white border py-2 px-3 rounded-md text-lg my-2'>Profile</a></li>
+                            <li className='m-3'><a onClick={() => signOut()} className='bg-red-500 text-white border py-2 px-3 rounded-md text-lg my-2'>Sign Out</a></li>
+                        </>
+                    )}           
+                </ul>
+            </div>
+        </div>
+    </nav>
+  )
+}
+
+export default Navbar
