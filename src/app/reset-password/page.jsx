@@ -1,7 +1,8 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import Navbar from "../components/Navbar";
+// Navbar is provided by layout
+import { useToast } from "../components/toast/ToastProvider";
 
 export default function ResetPasswordPage() {
   const params = useSearchParams();
@@ -14,6 +15,7 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const canSubmit = password && confirm && password === confirm && token && email;
 
@@ -22,7 +24,7 @@ export default function ResetPasswordPage() {
     setError("");
     setMessage("");
     if (password !== confirm) {
-      setError("Passwords do not match");
+      setError("Passwords do not match"); showToast('Passwords do not match','error');
       return;
     }
     setLoading(true);
@@ -34,10 +36,10 @@ export default function ResetPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed");
-      setMessage("Password reset successful. Redirecting to login...");
+      setMessage("Password reset successful. Redirecting to login..."); showToast('Password reset successful','success');
       setTimeout(() => router.replace("/login"), 1500);
     } catch (err) {
-      setError(err.message);
+      setError(err.message); showToast(err.message,'error');
     } finally {
       setLoading(false);
     }
@@ -45,15 +47,13 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="bg-purple-300 min-h-screen">
-      <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-xl">
         <h1 className="text-2xl font-semibold mb-4">Reset Password</h1>
         {!token || !email ? (
           <p className="text-sm">Missing token or email. Please use the link from your email.</p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-3">
-            {error && <div className="bg-red-500 text-white text-sm py-1 px-3 rounded-md">{error}</div>}
-            {message && <div className="bg-green-600 text-white text-sm py-1 px-3 rounded-md">{message}</div>}
+            {/* notifications handled globally by toasts */}
 
             <label className="block text-sm">New Password</label>
             <input

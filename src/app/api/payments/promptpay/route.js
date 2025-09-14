@@ -27,6 +27,15 @@ export async function POST(req) {
       amount: amountThb,
       currency: "thb",
       payment_method_types: ["promptpay"],
+      confirm: true,
+      payment_method_data: {
+        type: "promptpay",
+        billing_details: {
+          name: booking.customerName || undefined,
+          email: booking.customerEmail || undefined,
+          phone: booking.customerPhone || undefined,
+        },
+      },
       metadata: {
         bookingId: booking.bookingId,
         customerEmail: booking.customerEmail,
@@ -38,13 +47,13 @@ export async function POST(req) {
       await Booking.updateOne({ bookingId: booking.bookingId }, { $set: { paymentIntentId: intent.id } });
     } catch {}
 
-    // Stripe returns next_action for promptpay when confirmed on client; we can use PaymentIntent's hosted voucher
-    // For simplicity, return client_secret and intent id. Client can display via Stripe.js or a separate page.
+    const nextAction = intent?.next_action?.promptpay_display_qr_code || null;
     return NextResponse.json({
       clientSecret: intent.client_secret,
       paymentIntentId: intent.id,
       amount: amountThb,
       currency: "thb",
+      nextAction,
     });
   } catch (err) {
     console.error("POST /api/payments/promptpay error:", err);

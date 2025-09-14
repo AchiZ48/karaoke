@@ -1,10 +1,11 @@
 "use client"
 import React, {useState} from 'react'
-import Navbar from '../components/Navbar'
+// Navbar is provided by layout
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useToast } from "../components/toast/ToastProvider";
 import { redirect } from 'next/navigation'
 import { useEffect } from 'react'
 
@@ -13,13 +14,16 @@ function login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [sending, setSending] = useState(false);
 
   const router = useRouter();
 
   const {data : session} = useSession();
+  const { showToast } = useToast();
   useEffect(() => {
     if (session) {
-      router.replace("/welcome");
+      router.replace("/");
     }
   }, [session]);
 
@@ -31,32 +35,56 @@ function login() {
       });
 
       if (res.error){
-        setError("Invalid credentials");
+        setError("Invalid credentials"); showToast('Invalid credentials','error');
         return;
       }
+      showToast('Login successful','success');
       router.replace("welcome");
     } catch (error) {
       console.log(error);
     }
   }
 
+  const handleForgot = async () => {
+    setError("");
+    setInfo("");
+    if (!email) {
+      setError("Please enter your email first"); showToast('Please enter your email first','error');
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to send reset link");
+      setInfo("If the email exists, a reset link was sent."); showToast('If the email exists, a reset link was sent.','info');
+    } catch (err) {
+      setError(err.message); showToast(err.message,'error');
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <div>
-      <Navbar />
       <div className='container mx-auto py-5'>
         <h3>Login Page</h3>
         <hr className='my-3'/>
         <form onSubmit={handleSubmit}>
 
-           {error && (
-                <div className='bg-red-500 w-fit text-white text-sm py-1 px-3 rounded-md mt-2'>
-                    {error}
-                </div>
-            )}
-
-            <input onChange={(e) => setEmail(e.target.value)} className='block bg-gray-300 p-2 my-2 rounded-md' type="email" placeholder='your@email.com'/>
+            {/* notifications via global toasts */}
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className='block bg-gray-300 p-2 my-2 rounded-md' type="email" placeholder='your@email.com'/>
             <input onChange={(e) => setPassword(e.target.value)} className='block bg-gray-300 p-2 my-2 rounded-md' type="password" placeholder='Enter your password'/>
-            <button type='submit' className='bg-black p-2 rounded-md text-white' >Sign In</button>
+            <div className='flex items-center gap-3'>
+              <button type='submit' className='bg-black p-2 rounded-md text-white'>Sign In</button>
+              <button type='button' onClick={handleForgot} disabled={sending} className='underline text-sm'>
+                {sending ? 'Sending…' : 'Forgot password?'}
+              </button>
+            </div>
         </form>
         <hr className='my-3'/>
         <p>Don't have an account? go to <Link className='text-blue-500 underline' href="/register">Register </Link>Page</p>

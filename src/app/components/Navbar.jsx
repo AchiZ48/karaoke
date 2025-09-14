@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useMemo } from "react";
 import Image from 'next/image';
-import { useTheme } from "./theme/ThemeProvider";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const role = session?.user?.role;
-  const { theme, toggleTheme, setTheme } = useTheme();
 
   // เมนูตามเงื่อนไขที่มึงต้องการ
   const items = useMemo(() => {
@@ -55,7 +53,7 @@ export default function Navbar() {
   }, [session, status, role]);
 
   return (
-    <nav className="backdrop-blur-md sticky top-0 bg-indigo-500/70 dark:bg-neutral-900/70 text-white z-50 max-h-20 py-4">
+    <nav className="backdrop-blur-md fixed inset-x-0 top-0 bg-indigo-500/70 dark:bg-neutral-900/70 text-white z-50 max-h-20 py-4">
       <div className="max-w-screen-2xl flex justify-between items-center mx-auto my-0 px-8  [container-type:inline-size]">        
         <Link href="/#landing" className="text-[1.75rem] font-bold cursor-pointer flex items-center gap-2">
             <img src='/logo2.svg' alt="BornToSing"className="h-8 sm:h-10 md:h-12 w-auto shrink-0" ></img>
@@ -97,19 +95,6 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="ml-3 inline-flex items-center gap-2">
-            <label htmlFor="theme-select" className="sr-only">Theme</label>
-            <select
-              id="theme-select"
-              value={theme}
-              onChange={(e)=>setTheme(e.target.value)}
-              className="rounded-full px-3 py-2 text-sm md:text-base bg-white/20 text-white hover:bg-white/30 outline-none"
-            >
-              <option className="text-black" value="system">System</option>
-              <option className="text-black" value="light">Light</option>
-              <option className="text-black" value="dark">Dark</option>
-            </select>
-          </div>
         </div>
       </div>
     </nav>

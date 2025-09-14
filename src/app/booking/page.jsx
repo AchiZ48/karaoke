@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { loadStripe } from "@stripe/stripe-js";
-import Navbar from "../components/Navbar";
+import { useToast } from "../components/toast/ToastProvider";
 
 const timeSlots = [
   "12:00-14:00",
@@ -14,6 +14,7 @@ const timeSlots = [
 
 export default function BookingPage() {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [error, setError] = useState("");
@@ -26,6 +27,10 @@ export default function BookingPage() {
   const [remainingSec, setRemainingSec] = useState(null);
   const [currentBookingId, setCurrentBookingId] = useState("");
   const [waitingPayment, setWaitingPayment] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [showPromptPay, setShowPromptPay] = useState(false);
+  const [expiredHandled, setExpiredHandled] = useState(false);
 
   const [form, setForm] = useState({
     roomNumber: "",
@@ -33,7 +38,7 @@ export default function BookingPage() {
     timeSlot: timeSlots[0],
     numberOfPeople: 1,
     // name/email/phone derived from session on server
-    paymentMethod: "CASH",
+    paymentMethod: "PROMPTPAY",
     promotionCode: "",
   });
 
@@ -157,45 +162,36 @@ export default function BookingPage() {
         const payData = await payRes.json();
         if (!payRes.ok) throw new Error(payData?.message || "Payment init failed");
 
-        const pubKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-        if (!pubKey) throw new Error("Missing Stripe publishable key");
-        const stripe = await loadStripe(pubKey);
-        const result = await stripe.confirmPromptPayPayment(payData.clientSecret, {
-          payment_method: {
-            billing_details: {
-              name: session?.user?.name || (session?.user?.email?.split('@')[0] ?? 'User'),
-              email: session?.user?.email,
-            },
-          },
-        });
-        if (result.error) {
-          throw new Error(result.error.message || "Stripe confirm failed");
-        }
-        const next = result.paymentIntent?.next_action?.promptpay_display_qr_code;
-        const image = next?.image_url_png || next?.image_data_url;
-        if (image) {
-          const expires = result.paymentIntent.next_action?.expires_at
-            ? result.paymentIntent.next_action.expires_at * 1000
-            : Date.now() + 15 * 60 * 1000;
-          setQrData({ image, expires_at: Math.floor(expires / 1000), bookingId: booking.bookingId });
+        setClientSecret(payData.clientSecret || "");
+        setLocked(true);
+        setWaitingPayment(true);
+        const next = payData.nextAction;
+        if (next) {
+          const expires = next?.expires_at ? next.expires_at * 1000 : Date.now() + 15 * 60 * 1000;
+          setQrData({ image: next.image_url_png || next.image_data_url, expires_at: next?.expires_at, bookingId: booking.bookingId });
           setExpiresAt(expires);
+          setShowPromptPay(true);
           setSuccess("Scan the QR code to complete payment.");
+          showToast('PromptPay QR ready');
         } else {
           setSuccess("PromptPay initiated. Follow your banking app to complete payment.");
+          showToast('PromptPay initiated');
         }
         // Start polling for status
-        setWaitingPayment(true);
         startPollingStatus(booking.bookingId);
         return;
       }
     } catch (err) {
       setError(err.message);
+      showToast(err.message, 'error');
     }
   }
 
+  // no Stripe popup; showing our own modal with QR
+
   function startPollingStatus(bookingId) {
     let tries = 0;
-    const maxTries = 60; // ~3 minutes @ 3s
+    const maxTries = 180; // up to ~15 minutes @ 5s
     const iv = setInterval(async () => {
       tries += 1;
       try {
@@ -207,15 +203,16 @@ export default function BookingPage() {
             clearInterval(iv);
             setWaitingPayment(false);
             setSuccess("Payment received. Redirecting to My Bookings...");
+            showToast('Payment received', 'success');
             setTimeout(() => { window.location.href = "/my-bookings"; }, 1200);
           }
         }
       } catch {}
-      if (tries >= maxTries) {
+      if (tries >= maxTries || (expiresAt && Date.now() >= expiresAt)) {
         clearInterval(iv);
         setWaitingPayment(false);
       }
-    }, 3000);
+    }, 5000);
   }
 
   // Handle 15-minute expiry countdown and auto-cancel
@@ -224,33 +221,35 @@ export default function BookingPage() {
     const tick = () => {
       const diff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
       setRemainingSec(diff);
-      if (diff <= 0) {
+      if (diff <= 0 && !expiredHandled) {
+        setExpiredHandled(true);
         // auto-cancel pending booking
         fetch(`/api/bookings/${currentBookingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'cancel' })
+        }).then(()=>{
+          setWaitingPayment(false);
+          setLocked(false);
+          showToast('Payment expired. Booking cancelled.', 'error');
         }).catch(() => {});
       }
     };
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
-  }, [expiresAt, currentBookingId]);
+  }, [expiresAt, currentBookingId, expiredHandled]);
+
+  // using global toast provider (useToast)
 
   return (
     <main>
-      <Navbar />
-
-      <div className="container mx-auto p-4 max-w-3xl">
+      <div className="mx-auto justify-center flex py-5 px-2">
+        <div className="container p-4 max-w-3xl bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-4xl py-5 px-6 text-black dark:text-white ">
+        {/* toasts are global via ToastProvider */}
         <h1 className="text-2xl font-semibold mb-4">Book a Room</h1>
 
-        {error && (
-          <div className="bg-red-500 text-white px-3 py-2 rounded mb-3">{error}</div>
-        )}
-        {success && (
-          <div className="bg-green-600 text-white px-3 py-2 rounded mb-3">{success}</div>
-        )}
+        {/* notifications handled via global toasts */}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -259,9 +258,10 @@ export default function BookingPage() {
               <div className="opacity-70">Loading rooms…</div>
             ) : (
               <select
-                className="w-full border rounded p-2 bg-white text-black"
+                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
                 value={form.roomNumber}
                 onChange={(e) => setForm({ ...form, roomNumber: e.target.value })}
+                disabled={locked}
               >
                 {rooms.map((r) => (
                   <option key={r.number} value={r.number}>
@@ -272,24 +272,25 @@ export default function BookingPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block mb-1">Date</label>
               <input
                 type="date"
-                className="w-full border rounded p-2 bg-white text-black"
+                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 min={todayStr}
                 required
+                disabled={locked}
               />
             </div>
             <div>
               <label className="block mb-1">Time Slot</label>
               <select
-                className="w-full border rounded p-2 bg-white text-black"
+                className="w-full border-2 border-black rounded-full p-2 bg-white text-black "
                 value={form.timeSlot}
                 onChange={(e) => setForm({ ...form, timeSlot: e.target.value })}
+                disabled={locked}
               >
                 {timeSlots.map((t) => (
                   <option key={t} value={t} disabled={!availableSlots.includes(t)}>
@@ -298,15 +299,15 @@ export default function BookingPage() {
                 ))}
               </select>
             </div>
-          </div>
+
 
             <div>
-              <label className="block mb-1">Number of People</label>
+              <label className="block mb-1">Number of People </label>
               <input
                 type="number"
                 min={1}
                 max={selectedRoom?.capacity || undefined}
-                className="w-full border rounded p-2 bg-white text-black"
+                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
                 value={form.numberOfPeople}
                 onChange={(e) => {
                   const val = Number(e.target.value);
@@ -315,6 +316,7 @@ export default function BookingPage() {
                   setForm({ ...form, numberOfPeople: clamped });
                 }}
                 required
+                disabled={locked}
               />
             {selectedRoom && (
               <p className="text-sm opacity-70 mt-1">
@@ -323,16 +325,15 @@ export default function BookingPage() {
             )}
           </div>
 
-          {session?.user?.email && (
-            <div className="text-xs opacity-70">Booking will be associated with {session.user.email}</div>
-          )}
+          
 
           <div>
             <label className="block mb-1">Promotion</label>
             <select
-              className="w-full border rounded p-2 bg-white text-black"
+              className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
               value={form.promotionCode}
               onChange={(e) => setForm({ ...form, promotionCode: e.target.value })}
+              disabled={locked}
             >
               <option value="">No promotion</option>
               {promotions.map((p) => (
@@ -341,28 +342,52 @@ export default function BookingPage() {
                 </option>
               ))}
             </select>
-            {selectedRoom && (
-              <p className="text-sm opacity-70 mt-1">Total: {priceAfterPromo} THB</p>
-            )}
+            
           </div>
 
           <div>
             <label className="block mb-1">Payment Method</label>
             <select
-              className="w-full border rounded p-2 bg-white text-black"
+              className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
               value={form.paymentMethod}
               onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+              disabled={locked}
             >
-              <option value="CASH">Cash</option>
               <option value="PROMPTPAY">PromptPay</option>
+              <option value="CASH">Cash</option>              
             </select>
           </div>
+          {session?.user?.email && (
+            <div className="text-xs opacity-70">Booking will be associated with {session.user.email}</div>
+          )}
+          {selectedRoom && (
+              <p className="text-sm opacity-70 mt-1">Total: {priceAfterPromo} THB</p>
+            )}
 
-          <div className="pt-2">
-            <button type="submit" className="bg-black text-white px-4 py-2 rounded" disabled={!session}>
-              Confirm Booking
-            </button>
-          </div>
+          <div className="pt-2 inline-flex gap-4 justify-center">
+            {waitingPayment && (
+            <>
+                <button type="button" className="bg-red-500 text-white px-4 py-3 rounded-full" onClick={() => {
+                  if (!currentBookingId) return;
+                  fetch(`/api/bookings/${currentBookingId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action: 'cancel' }) }).then(()=>{
+                    setWaitingPayment(false); setLocked(false); setSuccess('Booking cancelled');
+                  });
+                }}>Cancel booking</button>
+                <button type="button" className="bg-black text-white px-4 py-3 rounded-full" onClick={() => setShowPromptPay(true)} disabled={remainingSec===0}>Show PromptPay QR</button>
+                
+            </>
+          )}
+            {!waitingPayment && (
+            <>
+                <button type="submit" className="bg-black text-white px-4 py-3 rounded-full" disabled={!session || locked}>Confirm Booking</button>
+            </>
+          )}
+
+
+
+          
+            
+        </div>
 
           {!session && (
             <div className="mt-2 text-sm">
@@ -370,26 +395,29 @@ export default function BookingPage() {
             </div>
           )}
 
-          {qrData && (
-            <div className="mt-4 p-4 border rounded">
-              <p className="mb-2">Scan this QR to pay with PromptPay:</p>
-              <img src={qrData.image} alt="PromptPay QR" className="w-64 h-64" />
-              <p className="text-sm opacity-70 mt-2">Booking: {qrData.bookingId}</p>
-              {remainingSec !== null && remainingSec > 0 && (
-                <p className="text-sm mt-1">Expires in {Math.floor(remainingSec/60)}m {remainingSec%60}s</p>
-              )}
-              {remainingSec === 0 && (
-                <p className="text-sm mt-1 text-red-600">QR expired. Please create a new booking.</p>
-              )}
-              {waitingPayment && (
-                <p className="text-sm mt-2">Waiting for payment confirmation...</p>
-              )}
-              <div className="mt-3">
-                <a href="/my-bookings" className="underline">Go to My Bookings</a>
+          
+          {showPromptPay && qrData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50" onClick={()=>setShowPromptPay(false)} />
+              <div className="relative bg-white text-black rounded-lg p-4 w-full max-w-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-semibold">PromptPay</div>
+                  <button onClick={()=>setShowPromptPay(false)} className="text-sm underline">Close</button>
+                </div>
+                <div className="flex flex-col items-center">
+                  <img src={qrData.image} alt="PromptPay QR" className="w-64 h-64" />
+                  {remainingSec !== null && remainingSec > 0 && (
+                    <p className="text-sm mt-2">Expires in {Math.floor(remainingSec/60)}m {remainingSec%60}s</p>
+                  )}
+                  {remainingSec === 0 && (
+                    <p className="text-sm mt-2 text-red-600">QR expired. Please create a new booking.</p>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </form>
+        </div>
       </div>
     </main>
   );

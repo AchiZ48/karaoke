@@ -2,25 +2,27 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../lib/mongodb";
-import Room from "../../../../models/room";
+import Promotion from "../../../../models/promotion";
 
 export async function GET(req) {
   try {
     await connectMongoDB();
-
     const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type");
-    const minCapacity = Number(searchParams.get("minCapacity")) || undefined;
+    const activeOnly = searchParams.get("active");
+    const now = new Date();
 
-    const query = { status: "AVAILABLE" };
-    if (type) query.type = type;
-    if (minCapacity) query.capacity = { $gte: minCapacity };
+    const query = {};
+    if (activeOnly) {
+      query.isActive = true;
+      query.startDate = { $lte: now };
+      query.endDate = { $gte: now };
+    }
 
-    const rooms = await Room.find(query).sort({ price: 1 }).lean();
-    return NextResponse.json({ rooms });
+    const promos = await Promotion.find(query).sort({ createdAt: -1 }).lean();
+    return NextResponse.json({ promotions: promos });
   } catch (err) {
-    console.error("GET /api/rooms error:", err);
-    return NextResponse.json({ message: "Failed to fetch rooms" }, { status: 500 });
+    console.error("GET /api/promotions error:", err);
+    return NextResponse.json({ message: "Failed to fetch promotions" }, { status: 500 });
   }
 }
 
@@ -30,13 +32,15 @@ export async function POST(req) {
     if (!session || session.user?.role !== 'admin') return NextResponse.json({ message: 'Admin only' }, { status: 403 });
     await connectMongoDB();
     const body = await req.json();
-    const { name, number, type, capacity, price, status } = body || {};
-    if (!name || !number || !type || !capacity || !price) return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
-    const created = await Room.create({ name, number, type, capacity, price, status: status || 'AVAILABLE' });
-    return NextResponse.json({ room: created }, { status: 201 });
+    const { code, name, discountType, discountValue, startDate, endDate, isActive } = body || {};
+    if (!code || !name || !discountType || discountValue == null || !startDate || !endDate) {
+      return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
+    }
+    const created = await Promotion.create({ code, name, discountType, discountValue, startDate, endDate, isActive: !!isActive });
+    return NextResponse.json({ promotion: created }, { status: 201 });
   } catch (err) {
-    console.error('POST /api/rooms error:', err);
-    return NextResponse.json({ message: 'Failed to create room' }, { status: 500 });
+    console.error('POST /api/promotions error:', err);
+    return NextResponse.json({ message: 'Failed to create promotion' }, { status: 500 });
   }
 }
 
@@ -48,11 +52,11 @@ export async function PATCH(req) {
     const body = await req.json();
     const { id, ...updates } = body || {};
     if (!id) return NextResponse.json({ message: 'id required' }, { status: 400 });
-    await Room.updateOne({ _id: id }, { $set: updates });
+    await Promotion.updateOne({ _id: id }, { $set: updates });
     return NextResponse.json({ message: 'Updated' });
   } catch (err) {
-    console.error('PATCH /api/rooms error:', err);
-    return NextResponse.json({ message: 'Failed to update room' }, { status: 500 });
+    console.error('PATCH /api/promotions error:', err);
+    return NextResponse.json({ message: 'Failed to update promotion' }, { status: 500 });
   }
 }
 
@@ -64,10 +68,10 @@ export async function DELETE(req) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ message: 'id required' }, { status: 400 });
-    await Room.deleteOne({ _id: id });
+    await Promotion.deleteOne({ _id: id });
     return NextResponse.json({ message: 'Deleted' });
   } catch (err) {
-    console.error('DELETE /api/rooms error:', err);
-    return NextResponse.json({ message: 'Failed to delete room' }, { status: 500 });
+    console.error('DELETE /api/promotions error:', err);
+    return NextResponse.json({ message: 'Failed to delete promotion' }, { status: 500 });
   }
 }

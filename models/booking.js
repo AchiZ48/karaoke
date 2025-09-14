@@ -13,6 +13,7 @@ const roomSubSchema = new Schema(
 
 const bookingSchema = new Schema(
   {
+    userId:       { type: Schema.Types.ObjectId, ref: "User", index: true },
     bookingId:     { type: String, required: true, unique: true, trim: true },
 
     // เก็บข้อมูลห้องแบบ embed (ถ้าจะใช้ roomId แทน ให้เปลี่ยนเป็น: roomId: { type: Schema.Types.ObjectId, ref: "Room" })
@@ -43,6 +44,8 @@ const bookingSchema = new Schema(
     paymentMethod: { type: String, required: true, enum: ["CASH","PROMPTPAY","STRIPE"] },
 
     totalAmount:   { type: Number, required: true, min: 0 },
+    promotionCode: { type: String, trim: true },
+    paymentIntentId: { type: String, index: true },
 
     // denormalized ไว้ group รายเดือนเร็ว ๆ
     monthKey:      { type: String, index: true }, // รูปแบบ "YYYY-MM"

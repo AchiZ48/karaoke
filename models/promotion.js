@@ -1,39 +1,21 @@
-// models/room.js
+// models/promotion.js
 import mongoose, { Schema, models, model } from "mongoose";
 
-const roomSchema = new Schema(
+const promotionSchema = new Schema(
   {
-    name:    { type: String, required: true, trim: true },
-    number:  { 
-      type: String, 
-      required: true, 
-      unique: true, 
-      trim: true,
-      set: v => (v ? String(v).toUpperCase() : v), // บังคับเป็นพิมพ์ใหญ่ให้สม่ำเสมอ
-    },
-    type:    { 
-      type: String, 
-      required: true, 
-      enum: ["STANDARD","PREMIUM","DELUXE","VIP"], 
-      index: true 
-    },
-    capacity:{ type: Number, required: true, min: 1 },
-    price:   { type: Number, required: true, min: 0 },
-    status:  { 
-      type: String, 
-      enum: ["AVAILABLE","OCCUPIED","MAINTENANCE"], 
-      default: "AVAILABLE",
-      index: true
-    },
-    // ตัวเลือกเสริม:
-    // notes:   { type: String, trim: true },
-    // features:{ type: [String], default: [] },
+    code: { type: String, required: true, unique: true, trim: true },
+    name: { type: String, required: true, trim: true },
+    discountType: { type: String, enum: ["PERCENT", "FIXED"], required: true },
+    discountValue: { type: Number, required: true, min: 0 },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    isActive: { type: Boolean, default: true, index: true },
   },
   { timestamps: true }
 );
 
-// ดัชนีเสริมสำหรับกรองบ่อย ๆ (เช่น ดูห้องว่างตามประเภท)
-roomSchema.index({ type: 1, status: 1 });
-roomSchema.index({ price: 1 });
+promotionSchema.index({ code: 1 });
+promotionSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
 
-export default models.Room || model("Room", roomSchema);
+export default models.Promotion || model("Promotion", promotionSchema);
+
