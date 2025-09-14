@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import { connectMongoDB } from "../../../../lib/mongodb";
-import Booking from "../../../../models/booking";
-import Room from "../../../../models/room";
-import Promotion from "../../../../models/promotion";
+import { connectMongoDB } from "../../../../../lib/mongodb";
+import Booking from "../../../../../models/booking";
+import Room from "../../../../../models/room";
+import Promotion from "../../../../../models/promotion";
 
 export async function GET() {
   try {
@@ -60,4 +60,3 @@ export async function GET() {
     return NextResponse.json({ message: 'Failed to load dashboard' }, { status: 500 });
   }
 }
-

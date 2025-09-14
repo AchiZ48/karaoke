@@ -281,7 +281,7 @@ export default function AdminDashboardClient({
           {adminSection === "rooms" && (
             <>
               <h1 className="text-2xl font-semibold mb-6">Room Management</h1>
-              <form className="mb-6 flex flex-wrap gap-2 items-end" onSubmit={async (e)=>{
+              <form className="hidden" onSubmit={async (e)=>{
                 e.preventDefault();
                 const form = e.target;
                 const payload = { name: form.name.value, number: form.number.value, type: form.type.value, capacity: Number(form.capacity.value), price: Number(form.price.value), status: form.status.value };
@@ -295,7 +295,7 @@ export default function AdminDashboardClient({
                 <select name="status" className="px-2 py-1 rounded bg-white/10 border border-white/10">{['AVAILABLE','OCCUPIED','MAINTENANCE'].map(s => <option key={s} value={s}>{s}</option>)}</select>
                 <button className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2">Add New Room</button>
               </form>
-              <button className="mb-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2">
+              <button className="mb-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2" onClick={()=>{ setRoomDraft({ name:'', number:'', type:'STANDARD', capacity:1, price:0, status:'AVAILABLE' }); setShowRoomModal(true); }}>
                 ➕ Add New Room
               </button>
               <div className="flex flex-wrap gap-2 mb-2">
@@ -352,9 +352,6 @@ export default function AdminDashboardClient({
                 <label className="flex items-center gap-1 text-sm"><input name="isActive" type="checkbox" defaultChecked/> Active</label>
                 <button className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2">Create New Promotion</button>
               </form>
-              <button className="mb-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2">
-                ➕ Create New Promotion
-              </button>
               <div className="flex flex-wrap gap-2 mb-2">
                 <input value={promoSearch} onChange={e=>setPromoSearch(e.target.value)} placeholder="Search promotions" className="px-2 py-1 rounded bg-white/10 border border-white/10" />
                 <select value={promoActive} onChange={e=>setPromoActive(e.target.value)} className="px-2 py-1 rounded bg-white/10 border border-white/10">
