@@ -22,7 +22,19 @@ export default function RoomCards() {
     load();
   }, []);
 
-  if (loading) return <div>Loading rooms...</div>;
+  if (loading)
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 animate-pulse">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="border rounded p-4">
+            <div className="h-5 w-2/3 bg-gray-300 dark:bg-white/10 rounded mb-3"></div>
+            <div className="h-4 w-1/2 bg-gray-200 dark:bg-white/10 rounded mb-2"></div>
+            <div className="h-4 w-1/3 bg-gray-200 dark:bg-white/10 rounded mb-2"></div>
+            <div className="h-4 w-1/3 bg-gray-200 dark:bg-white/10 rounded"></div>
+          </div>
+        ))}
+      </div>
+    );
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (

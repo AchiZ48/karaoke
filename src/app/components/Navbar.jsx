@@ -62,7 +62,13 @@ export default function Navbar() {
     }
 
     // ระหว่างโหลด
-    return [{ label: "Loading...", disabled: true }];
+    return [
+      { href: "/#landing", label: "Home" },
+      { href: "/#rooms", label: "Room" },
+      { href: "/promotions", label: "Promotions" },
+      { href: "/login", label: "Log in" },
+      { href: "/register", label: "Register" },
+    ];
   }, [session, status, role]);
 
   return (

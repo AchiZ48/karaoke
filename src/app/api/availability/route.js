@@ -29,13 +29,18 @@ export async function GET(req) {
     day.setHours(0, 0, 0, 0);
 
     await connectMongoDB();
-    const activeStatuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+    const cutoff = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes
     const nextDay = new Date(day);
     nextDay.setDate(nextDay.getDate() + 1);
     const bookings = await Booking.find({
       "room.number": String(roomNumber).toUpperCase(),
       date: { $gte: day, $lt: nextDay },
-      status: { $in: activeStatuses },
+      $or: [
+        // Consider these always occupying
+        { status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] } },
+        // Pending but not expired (created within cutoff)
+        { status: "PENDING", createdAt: { $gte: cutoff } },
+      ],
     })
       .select("timeSlot")
       .lean();

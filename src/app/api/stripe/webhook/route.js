@@ -76,3 +76,8 @@ export async function POST(req) {
     return new NextResponse("error", { status: 500 });
   }
 }
+
+// Helpful for checking the route exists in a browser or with curl.
+export async function GET() {
+  return new NextResponse("stripe webhook ready", { status: 200 });
+}

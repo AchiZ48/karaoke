@@ -14,9 +14,21 @@ export async function GET(_req, context) {
         { status: 400 },
       );
     await connectMongoDB();
-    const booking = await Booking.findOne({ bookingId }).lean();
-    if (!booking)
+    const doc = await Booking.findOne({ bookingId });
+    if (!doc)
       return NextResponse.json({ message: "Not found" }, { status: 404 });
+    // Auto-cancel expired unpaid bookings (non-CASH) after 15 minutes
+    const cutoffMs = 15 * 60 * 1000;
+    const expired =
+      doc.status === "PENDING" &&
+      doc.paymentMethod !== "CASH" &&
+      doc.createdAt &&
+      Date.now() - new Date(doc.createdAt).getTime() > cutoffMs;
+    if (expired) {
+      doc.status = "CANCELLED";
+      await doc.save();
+    }
+    const booking = doc.toObject();
     return NextResponse.json({ booking });
   } catch (err) {
     console.error("GET /api/bookings/[bookingId] error:", err);

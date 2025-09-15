@@ -37,6 +37,17 @@ export async function POST(req) {
         { status: 400 },
       );
     }
+    // Block initiating payment if booking expired unpaid (>15m)
+    if (
+      booking.status === "PENDING" &&
+      booking.createdAt &&
+      Date.now() - new Date(booking.createdAt).getTime() > 15 * 60 * 1000
+    ) {
+      return NextResponse.json(
+        { message: "Booking payment window expired. Please create a new booking." },
+        { status: 400 },
+      );
+    }
 
     const amountThb = Math.round(Number(booking.totalAmount) * 100); // THB in satang
     const intent = await stripe.paymentIntents.create({
