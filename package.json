@@ -7,6 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint . --fix --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"{src,lib,models,scripts}/**/*.{js,jsx,ts,tsx,css,md,json}\"",
+    "format:check": "prettier --check \"{src,lib,models,scripts}/**/*.{js,jsx,ts,tsx,css,md,json}\"",
     "seed": "node scripts/seed.js"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4"
   }
 }

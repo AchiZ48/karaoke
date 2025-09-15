@@ -8,13 +8,19 @@ export async function POST(req) {
   try {
     const { email, token, password } = await req.json();
     if (!email || !token || !password) {
-      return NextResponse.json({ message: "Email, token and password are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Email, token and password are required" },
+        { status: 400 },
+      );
     }
 
     await connectMongoDB();
     const user = await User.findOne({ email }).exec();
     if (!user || !user.passwordResetTokenHash || !user.passwordResetExpiresAt) {
-      return NextResponse.json({ message: "Invalid or expired token" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid or expired token" },
+        { status: 400 },
+      );
     }
 
     if (user.passwordResetExpiresAt.getTime() < Date.now()) {
@@ -35,7 +41,9 @@ export async function POST(req) {
     return NextResponse.json({ message: "Password has been reset" });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ message: "Failed to reset password" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to reset password" },
+      { status: 500 },
+    );
   }
 }
-

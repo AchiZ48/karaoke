@@ -44,7 +44,7 @@ export default function BookingPage() {
 
   const selectedRoom = useMemo(
     () => rooms.find((r) => r.number === form.roomNumber),
-    [rooms, form.roomNumber]
+    [rooms, form.roomNumber],
   );
 
   useEffect(() => {
@@ -95,14 +95,20 @@ export default function BookingPage() {
       setOccupiedSlots([]);
       if (!form.roomNumber || !form.date) return;
       try {
-        const params = new URLSearchParams({ roomNumber: form.roomNumber, date: form.date });
+        const params = new URLSearchParams({
+          roomNumber: form.roomNumber,
+          date: form.date,
+        });
         const res = await fetch(`/api/availability?${params.toString()}`);
         const data = await res.json();
         if (res.ok) {
           setAvailableSlots(data.available || timeSlots);
           setOccupiedSlots(data.occupied || []);
           if (!data.available?.includes(form.timeSlot)) {
-            setForm((f) => ({ ...f, timeSlot: (data.available || [timeSlots[0]])[0] }));
+            setForm((f) => ({
+              ...f,
+              timeSlot: (data.available || [timeSlots[0]])[0],
+            }));
           }
         }
       } catch (e) {
@@ -112,7 +118,7 @@ export default function BookingPage() {
     loadAvailability();
   }, [form.roomNumber, form.date]);
 
-  const todayStr = useMemo(() => new Date().toISOString().slice(0,10), []);
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const priceAfterPromo = useMemo(() => {
     const r = rooms.find((x) => x.number === form.roomNumber);
@@ -160,22 +166,31 @@ export default function BookingPage() {
           body: JSON.stringify({ bookingId: booking.bookingId }),
         });
         const payData = await payRes.json();
-        if (!payRes.ok) throw new Error(payData?.message || "Payment init failed");
+        if (!payRes.ok)
+          throw new Error(payData?.message || "Payment init failed");
 
         setClientSecret(payData.clientSecret || "");
         setLocked(true);
         setWaitingPayment(true);
         const next = payData.nextAction;
         if (next) {
-          const expires = next?.expires_at ? next.expires_at * 1000 : Date.now() + 15 * 60 * 1000;
-          setQrData({ image: next.image_url_png || next.image_data_url, expires_at: next?.expires_at, bookingId: booking.bookingId });
+          const expires = next?.expires_at
+            ? next.expires_at * 1000
+            : Date.now() + 15 * 60 * 1000;
+          setQrData({
+            image: next.image_url_png || next.image_data_url,
+            expires_at: next?.expires_at,
+            bookingId: booking.bookingId,
+          });
           setExpiresAt(expires);
           setShowPromptPay(true);
           setSuccess("Scan the QR code to complete payment.");
-          showToast('PromptPay QR ready');
+          showToast("PromptPay QR ready");
         } else {
-          setSuccess("PromptPay initiated. Follow your banking app to complete payment.");
-          showToast('PromptPay initiated');
+          setSuccess(
+            "PromptPay initiated. Follow your banking app to complete payment.",
+          );
+          showToast("PromptPay initiated");
         }
         // Start polling for status
         startPollingStatus(booking.bookingId);
@@ -183,7 +198,7 @@ export default function BookingPage() {
       }
     } catch (err) {
       setError(err.message);
-      showToast(err.message, 'error');
+      showToast(err.message, "error");
     }
   }
 
@@ -203,8 +218,10 @@ export default function BookingPage() {
             clearInterval(iv);
             setWaitingPayment(false);
             setSuccess("Payment received. Redirecting to My Bookings...");
-            showToast('Payment received', 'success');
-            setTimeout(() => { window.location.href = "/my-bookings"; }, 1200);
+            showToast("Payment received", "success");
+            setTimeout(() => {
+              window.location.href = "/my-bookings";
+            }, 1200);
           }
         }
       } catch {}
@@ -225,14 +242,16 @@ export default function BookingPage() {
         setExpiredHandled(true);
         // auto-cancel pending booking
         fetch(`/api/bookings/${currentBookingId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'cancel' })
-        }).then(()=>{
-          setWaitingPayment(false);
-          setLocked(false);
-          showToast('Payment expired. Booking cancelled.', 'error');
-        }).catch(() => {});
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "cancel" }),
+        })
+          .then(() => {
+            setWaitingPayment(false);
+            setLocked(false);
+            showToast("Payment expired. Booking cancelled.", "error");
+          })
+          .catch(() => {});
       }
     };
     tick();
@@ -246,31 +265,33 @@ export default function BookingPage() {
     <main>
       <div className="mx-auto justify-center flex py-5 px-2">
         <div className="container p-4 max-w-3xl bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-4xl py-5 px-6 text-black dark:text-white ">
-        {/* toasts are global via ToastProvider */}
-        <h1 className="text-2xl font-semibold mb-4">Book a Room</h1>
+          {/* toasts are global via ToastProvider */}
+          <h1 className="text-2xl font-semibold mb-4">Book a Room</h1>
 
-        {/* notifications handled via global toasts */}
+          {/* notifications handled via global toasts */}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block mb-1">Room</label>
-            {loadingRooms ? (
-              <div className="opacity-70">Loading rooms…</div>
-            ) : (
-              <select
-                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
-                value={form.roomNumber}
-                onChange={(e) => setForm({ ...form, roomNumber: e.target.value })}
-                disabled={locked}
-              >
-                {rooms.map((r) => (
-                  <option key={r.number} value={r.number}>
-                    {r.name} ({r.type}) — {r.capacity} ppl — {r.price} THB
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block mb-1">Room</label>
+              {loadingRooms ? (
+                <div className="opacity-70">Loading rooms…</div>
+              ) : (
+                <select
+                  className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
+                  value={form.roomNumber}
+                  onChange={(e) =>
+                    setForm({ ...form, roomNumber: e.target.value })
+                  }
+                  disabled={locked}
+                >
+                  {rooms.map((r) => (
+                    <option key={r.number} value={r.number}>
+                      {r.name} ({r.type}) — {r.capacity} ppl — {r.price} THB
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
 
             <div>
               <label className="block mb-1">Date</label>
@@ -293,13 +314,17 @@ export default function BookingPage() {
                 disabled={locked}
               >
                 {timeSlots.map((t) => (
-                  <option key={t} value={t} disabled={!availableSlots.includes(t)}>
-                    {t}{occupiedSlots.includes(t) ? " (unavailable)" : ""}
+                  <option
+                    key={t}
+                    value={t}
+                    disabled={!availableSlots.includes(t)}
+                  >
+                    {t}
+                    {occupiedSlots.includes(t) ? " (unavailable)" : ""}
                   </option>
                 ))}
               </select>
             </div>
-
 
             <div>
               <label className="block mb-1">Number of People </label>
@@ -318,105 +343,149 @@ export default function BookingPage() {
                 required
                 disabled={locked}
               />
+              {selectedRoom && (
+                <p className="text-sm opacity-70 mt-1">
+                  Capacity: {selectedRoom.capacity} – Price:{" "}
+                  {selectedRoom.price} THB
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block mb-1">Promotion</label>
+              <select
+                className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                value={form.promotionCode}
+                onChange={(e) =>
+                  setForm({ ...form, promotionCode: e.target.value })
+                }
+                disabled={locked}
+              >
+                <option value="">No promotion</option>
+                {promotions.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name} ({p.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-1">Payment Method</label>
+              <select
+                className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                value={form.paymentMethod}
+                onChange={(e) =>
+                  setForm({ ...form, paymentMethod: e.target.value })
+                }
+                disabled={locked}
+              >
+                <option value="PROMPTPAY">PromptPay</option>
+                <option value="CASH">Cash</option>
+              </select>
+            </div>
+            {session?.user?.email && (
+              <div className="text-xs opacity-70">
+                Booking will be associated with {session.user.email}
+              </div>
+            )}
             {selectedRoom && (
               <p className="text-sm opacity-70 mt-1">
-                Capacity: {selectedRoom.capacity} – Price: {selectedRoom.price} THB
+                Total: {priceAfterPromo} THB
               </p>
             )}
-          </div>
 
-          
+            <div className="pt-2 inline-flex gap-4 justify-center">
+              {waitingPayment && (
+                <>
+                  <button
+                    type="button"
+                    className="bg-red-500 text-white px-4 py-3 rounded-full"
+                    onClick={() => {
+                      if (!currentBookingId) return;
+                      fetch(`/api/bookings/${currentBookingId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "cancel" }),
+                      }).then(() => {
+                        setWaitingPayment(false);
+                        setLocked(false);
+                        setSuccess("Booking cancelled");
+                      });
+                    }}
+                  >
+                    Cancel booking
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-black text-white px-4 py-3 rounded-full"
+                    onClick={() => setShowPromptPay(true)}
+                    disabled={remainingSec === 0}
+                  >
+                    Show PromptPay QR
+                  </button>
+                </>
+              )}
+              {!waitingPayment && (
+                <>
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-4 py-3 rounded-full"
+                    disabled={!session || locked}
+                  >
+                    Confirm Booking
+                  </button>
+                </>
+              )}
+            </div>
 
-          <div>
-            <label className="block mb-1">Promotion</label>
-            <select
-              className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
-              value={form.promotionCode}
-              onChange={(e) => setForm({ ...form, promotionCode: e.target.value })}
-              disabled={locked}
-            >
-              <option value="">No promotion</option>
-              {promotions.map((p) => (
-                <option key={p.code} value={p.code}>
-                  {p.name} ({p.code})
-                </option>
-              ))}
-            </select>
-            
-          </div>
-
-          <div>
-            <label className="block mb-1">Payment Method</label>
-            <select
-              className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
-              value={form.paymentMethod}
-              onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-              disabled={locked}
-            >
-              <option value="PROMPTPAY">PromptPay</option>
-              <option value="CASH">Cash</option>              
-            </select>
-          </div>
-          {session?.user?.email && (
-            <div className="text-xs opacity-70">Booking will be associated with {session.user.email}</div>
-          )}
-          {selectedRoom && (
-              <p className="text-sm opacity-70 mt-1">Total: {priceAfterPromo} THB</p>
+            {!session && (
+              <div className="mt-2 text-sm">
+                {authRequiredMsg}{" "}
+                <a href="/login?callbackUrl=/booking" className="underline">
+                  Login
+                </a>
+              </div>
             )}
 
-          <div className="pt-2 inline-flex gap-4 justify-center">
-            {waitingPayment && (
-            <>
-                <button type="button" className="bg-red-500 text-white px-4 py-3 rounded-full" onClick={() => {
-                  if (!currentBookingId) return;
-                  fetch(`/api/bookings/${currentBookingId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action: 'cancel' }) }).then(()=>{
-                    setWaitingPayment(false); setLocked(false); setSuccess('Booking cancelled');
-                  });
-                }}>Cancel booking</button>
-                <button type="button" className="bg-black text-white px-4 py-3 rounded-full" onClick={() => setShowPromptPay(true)} disabled={remainingSec===0}>Show PromptPay QR</button>
-                
-            </>
-          )}
-            {!waitingPayment && (
-            <>
-                <button type="submit" className="bg-black text-white px-4 py-3 rounded-full" disabled={!session || locked}>Confirm Booking</button>
-            </>
-          )}
-
-
-
-          
-            
-        </div>
-
-          {!session && (
-            <div className="mt-2 text-sm">
-              {authRequiredMsg} <a href="/login?callbackUrl=/booking" className="underline">Login</a>
-            </div>
-          )}
-
-          
-          {showPromptPay && qrData && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50" onClick={()=>setShowPromptPay(false)} />
-              <div className="relative bg-white text-black rounded-lg p-4 w-full max-w-md">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="font-semibold">PromptPay</div>
-                  <button onClick={()=>setShowPromptPay(false)} className="text-sm underline">Close</button>
-                </div>
-                <div className="flex flex-col items-center">
-                  <img src={qrData.image} alt="PromptPay QR" className="w-64 h-64" />
-                  {remainingSec !== null && remainingSec > 0 && (
-                    <p className="text-sm mt-2">Expires in {Math.floor(remainingSec/60)}m {remainingSec%60}s</p>
-                  )}
-                  {remainingSec === 0 && (
-                    <p className="text-sm mt-2 text-red-600">QR expired. Please create a new booking.</p>
-                  )}
+            {showPromptPay && qrData && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div
+                  className="absolute inset-0 bg-black/50"
+                  onClick={() => setShowPromptPay(false)}
+                />
+                <div className="relative bg-white text-black rounded-lg p-4 w-full max-w-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-semibold">PromptPay</div>
+                    <button
+                      onClick={() => setShowPromptPay(false)}
+                      className="text-sm underline"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={qrData.image}
+                      alt="PromptPay QR"
+                      className="w-64 h-64"
+                    />
+                    {remainingSec !== null && remainingSec > 0 && (
+                      <p className="text-sm mt-2">
+                        Expires in {Math.floor(remainingSec / 60)}m{" "}
+                        {remainingSec % 60}s
+                      </p>
+                    )}
+                    {remainingSec === 0 && (
+                      <p className="text-sm mt-2 text-red-600">
+                        QR expired. Please create a new booking.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </form>
+            )}
+          </form>
         </div>
       </div>
     </main>

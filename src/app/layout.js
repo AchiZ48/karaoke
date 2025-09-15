@@ -7,7 +7,6 @@ import { ToastProvider } from "./components/toast/ToastProvider";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import PageFrame from "./components/PageFrame";
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,7 +25,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white`}
+      >
         <script
           dangerouslySetInnerHTML={{
             __html: `(() => {try {var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark', t==='dark');} catch(e) {}})();`,
@@ -36,9 +37,7 @@ export default function RootLayout({ children }) {
           <ToastProvider>
             <AuthProvider>
               <Navbar />
-              <PageFrame>
-                {children}
-              </PageFrame>
+              <PageFrame>{children}</PageFrame>
               <Footer />
             </AuthProvider>
           </ToastProvider>

@@ -11,11 +11,10 @@ const promotionSchema = new Schema(
     endDate: { type: Date, required: true },
     isActive: { type: Boolean, default: true, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 promotionSchema.index({ code: 1 });
 promotionSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
 
 export default models.Promotion || model("Promotion", promotionSchema);
-

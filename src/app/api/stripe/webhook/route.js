@@ -8,7 +8,9 @@ export const runtime = "nodejs";
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const stripe = stripeSecret ? new Stripe(stripeSecret, { apiVersion: "2024-06-20" }) : null;
+const stripe = stripeSecret
+  ? new Stripe(stripeSecret, { apiVersion: "2024-06-20" })
+  : null;
 
 export async function POST(req) {
   if (!stripe || !webhookSecret) {
@@ -34,14 +36,30 @@ export async function POST(req) {
         await connectMongoDB();
         let res;
         if (bookingId) {
-          res = await Booking.updateOne({ bookingId }, { $set: { status: "PAID" } });
-          console.log("Booking status updated by bookingId", bookingId, res.matchedCount, res.modifiedCount);
+          res = await Booking.updateOne(
+            { bookingId },
+            { $set: { status: "PAID" } },
+          );
+          console.log(
+            "Booking status updated by bookingId",
+            bookingId,
+            res.matchedCount,
+            res.modifiedCount,
+          );
         }
         if (!res || res.matchedCount === 0) {
           // fallback by paymentIntentId
           const pid = intent.id;
-          res = await Booking.updateOne({ paymentIntentId: pid }, { $set: { status: "PAID" } });
-          console.log("Booking status updated by paymentIntentId", pid, res.matchedCount, res.modifiedCount);
+          res = await Booking.updateOne(
+            { paymentIntentId: pid },
+            { $set: { status: "PAID" } },
+          );
+          console.log(
+            "Booking status updated by paymentIntentId",
+            pid,
+            res.matchedCount,
+            res.modifiedCount,
+          );
         }
         break;
       }

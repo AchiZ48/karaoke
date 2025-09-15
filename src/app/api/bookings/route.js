@@ -13,7 +13,9 @@ function isValidTimeSlot(str) {
 function generateBookingId() {
   const d = new Date();
   const year = d.getFullYear();
-  const rnd = Math.floor(Math.random() * 1_000_000).toString().padStart(6, "0");
+  const rnd = Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, "0");
   return `BK${year}${rnd}`;
 }
 
@@ -34,30 +36,56 @@ export async function POST(req) {
       promotionCode,
     } = body || {};
 
-    if (!roomNumber || !date || !timeSlot || !numberOfPeople || !paymentMethod) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    if (
+      !roomNumber ||
+      !date ||
+      !timeSlot ||
+      !numberOfPeople ||
+      !paymentMethod
+    ) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 },
+      );
     }
     if (!session.user?.email) {
-      return NextResponse.json({ message: "Account email is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Account email is required" },
+        { status: 400 },
+      );
     }
     if (!isValidTimeSlot(timeSlot)) {
-      return NextResponse.json({ message: "Invalid timeSlot format (HH:MM-HH:MM)" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid timeSlot format (HH:MM-HH:MM)" },
+        { status: 400 },
+      );
     }
 
     await connectMongoDB();
 
-    const room = await Room.findOne({ number: String(roomNumber).toUpperCase(), status: { $in: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"] } }).lean();
+    const room = await Room.findOne({
+      number: String(roomNumber).toUpperCase(),
+      status: { $in: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"] },
+    }).lean();
     if (!room) {
       return NextResponse.json({ message: "Room not found" }, { status: 404 });
     }
     if (Number(numberOfPeople) > room.capacity) {
-      return NextResponse.json({ message: `Exceeds room capacity (${room.capacity})` }, { status: 400 });
+      return NextResponse.json(
+        { message: `Exceeds room capacity (${room.capacity})` },
+        { status: 400 },
+      );
     }
     // Date must not be in the past
-    const today = new Date(); today.setHours(0,0,0,0);
-    const reqDate = new Date(date); reqDate.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const reqDate = new Date(date);
+    reqDate.setHours(0, 0, 0, 0);
     if (reqDate < today) {
-      return NextResponse.json({ message: "Date cannot be in the past" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Date cannot be in the past" },
+        { status: 400 },
+      );
     }
 
     // Prevent selecting a slot that already ended if booking for today
@@ -70,14 +98,18 @@ export async function POST(req) {
         const slotEnd = new Date(reqDate);
         slotEnd.setHours(eh, em, 0, 0);
         if (slotEnd.getTime() <= now.getTime()) {
-          return NextResponse.json({ message: "Selected time slot already passed" }, { status: 400 });
+          return NextResponse.json(
+            { message: "Selected time slot already passed" },
+            { status: 400 },
+          );
         }
       }
     }
 
     // Ensure slot availability (no existing active booking for same room/date/slot)
-    const activeStatuses = ["PENDING","CONFIRMED","PAID","COMPLETED"];
-    const nextDay = new Date(reqDate); nextDay.setDate(nextDay.getDate() + 1);
+    const activeStatuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+    const nextDay = new Date(reqDate);
+    nextDay.setDate(nextDay.getDate() + 1);
     const exists = await Booking.exists({
       "room.number": room.number,
       date: { $gte: reqDate, $lt: nextDay },
@@ -85,7 +117,10 @@ export async function POST(req) {
       status: { $in: activeStatuses },
     });
     if (exists) {
-      return NextResponse.json({ message: "Selected time slot is unavailable" }, { status: 409 });
+      return NextResponse.json(
+        { message: "Selected time slot is unavailable" },
+        { status: 409 },
+      );
     }
 
     // Calculate total with optional promotion
@@ -93,10 +128,18 @@ export async function POST(req) {
     if (promotionCode) {
       const Promotion = (await import("../../../../models/promotion")).default;
       const now = new Date();
-      const promo = await Promotion.findOne({ code: promotionCode, isActive: true, startDate: { $lte: now }, endDate: { $gte: now } }).lean();
+      const promo = await Promotion.findOne({
+        code: promotionCode,
+        isActive: true,
+        startDate: { $lte: now },
+        endDate: { $gte: now },
+      }).lean();
       if (promo) {
         if (promo.discountType === "PERCENT") {
-          totalAmount = Math.max(0, Math.round(room.price * (1 - promo.discountValue / 100)));
+          totalAmount = Math.max(
+            0,
+            Math.round(room.price * (1 - promo.discountValue / 100)),
+          );
         } else if (promo.discountType === "FIXED") {
           totalAmount = Math.max(0, room.price - promo.discountValue);
         }
@@ -104,16 +147,27 @@ export async function POST(req) {
     }
 
     const safeEmail = session.user?.email || "";
-    const safeName = session.user?.name || (safeEmail ? safeEmail.split('@')[0] : "User");
+    const safeName =
+      session.user?.name || (safeEmail ? safeEmail.split("@")[0] : "User");
     // Pull phone from user profile
     const userDoc = await User.findOne({ email: safeEmail }).lean();
     const profilePhone = userDoc?.phone;
     if (!profilePhone) {
-      return NextResponse.json({ message: "Phone number not found on profile. Please add it in your profile." }, { status: 400 });
+      return NextResponse.json(
+        {
+          message:
+            "Phone number not found on profile. Please add it in your profile.",
+        },
+        { status: 400 },
+      );
     }
 
     const bookingDoc = {
-      userId: session.user?.id ? (typeof session.user.id === 'string' ? session.user.id : undefined) : undefined,
+      userId: session.user?.id
+        ? typeof session.user.id === "string"
+          ? session.user.id
+          : undefined
+        : undefined,
       bookingId: generateBookingId(),
       room: {
         name: room.name,
@@ -137,6 +191,9 @@ export async function POST(req) {
     return NextResponse.json({ booking: created }, { status: 201 });
   } catch (err) {
     console.error("POST /api/bookings error:", err);
-    return NextResponse.json({ message: "Failed to create booking" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to create booking" },
+      { status: 500 },
+    );
   }
 }

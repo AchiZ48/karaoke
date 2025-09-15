@@ -13,26 +13,34 @@ export default async function MyBookingsPage() {
   const userId = session.user.id;
   const email = session.user.email;
   const list = await Booking.find({
-    $or: [
-      { userId },
-      { customerEmail: email },
-    ],
+    $or: [{ userId }, { customerEmail: email }],
   })
     .sort({ createdAt: -1 })
     .lean();
 
   const total = list.length;
   const pending = list.filter((b) => b.status === "PENDING").length;
-  const complete = list.filter((b) => ["PAID","COMPLETED","CONFIRMED"].includes(b.status)).length;
+  const complete = list.filter((b) =>
+    ["PAID", "COMPLETED", "CONFIRMED"].includes(b.status),
+  ).length;
 
   return (
     <main>
       <div className="container mx-auto p-4 max-w-5xl">
         <h1 className="text-2xl font-semibold mb-4">My Bookings</h1>
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="p-4 border rounded"><div className="text-sm opacity-70">Total</div><div className="text-xl">{total}</div></div>
-          <div className="p-4 border rounded"><div className="text-sm opacity-70">Pending</div><div className="text-xl">{pending}</div></div>
-          <div className="p-4 border rounded"><div className="text-sm opacity-70">Complete</div><div className="text-xl">{complete}</div></div>
+          <div className="p-4 border rounded">
+            <div className="text-sm opacity-70">Total</div>
+            <div className="text-xl">{total}</div>
+          </div>
+          <div className="p-4 border rounded">
+            <div className="text-sm opacity-70">Pending</div>
+            <div className="text-xl">{pending}</div>
+          </div>
+          <div className="p-4 border rounded">
+            <div className="text-sm opacity-70">Complete</div>
+            <div className="text-xl">{complete}</div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -49,20 +57,33 @@ export default async function MyBookingsPage() {
             </thead>
             <tbody>
               {list.map((b) => (
-                <tr key={b._id} className="border-t border-neutral-200 dark:border-white/10">
+                <tr
+                  key={b._id}
+                  className="border-t border-neutral-200 dark:border-white/10"
+                >
                   <td className="px-3 py-2 font-medium">{b.bookingId}</td>
-                  <td className="px-3 py-2">{b.room?.name || b.room?.number}</td>
-                  <td className="px-3 py-2">{new Date(b.date).toLocaleDateString()}</td>
+                  <td className="px-3 py-2">
+                    {b.room?.name || b.room?.number}
+                  </td>
+                  <td className="px-3 py-2">
+                    {new Date(b.date).toLocaleDateString()}
+                  </td>
                   <td className="px-3 py-2">{b.timeSlot}</td>
                   <td className="px-3 py-2">{b.status}</td>
                   <td className="px-3 py-2">
-                    <ActionsCell bookingId={b.bookingId} status={b.status} paymentMethod={b.paymentMethod} />
+                    <ActionsCell
+                      bookingId={b.bookingId}
+                      status={b.status}
+                      paymentMethod={b.paymentMethod}
+                    />
                   </td>
                 </tr>
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center opacity-70">No bookings yet.</td>
+                  <td colSpan={6} className="px-3 py-4 text-center opacity-70">
+                    No bookings yet.
+                  </td>
                 </tr>
               )}
             </tbody>

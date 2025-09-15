@@ -17,14 +17,16 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
-  const canSubmit = password && confirm && password === confirm && token && email;
+  const canSubmit =
+    password && confirm && password === confirm && token && email;
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     if (password !== confirm) {
-      setError("Passwords do not match"); showToast('Passwords do not match','error');
+      setError("Passwords do not match");
+      showToast("Passwords do not match", "error");
       return;
     }
     setLoading(true);
@@ -36,10 +38,12 @@ export default function ResetPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed");
-      setMessage("Password reset successful. Redirecting to login..."); showToast('Password reset successful','success');
+      setMessage("Password reset successful. Redirecting to login...");
+      showToast("Password reset successful", "success");
       setTimeout(() => router.replace("/login"), 1500);
     } catch (err) {
-      setError(err.message); showToast(err.message,'error');
+      setError(err.message);
+      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -50,7 +54,9 @@ export default function ResetPasswordPage() {
       <div className="container mx-auto px-4 py-8 max-w-xl">
         <h1 className="text-2xl font-semibold mb-4">Reset Password</h1>
         {!token || !email ? (
-          <p className="text-sm">Missing token or email. Please use the link from your email.</p>
+          <p className="text-sm">
+            Missing token or email. Please use the link from your email.
+          </p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-3">
             {/* notifications handled globally by toasts */}
@@ -88,4 +94,3 @@ export default function ResetPasswordPage() {
     </main>
   );
 }
-

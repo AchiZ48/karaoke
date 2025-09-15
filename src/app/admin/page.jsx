@@ -57,7 +57,7 @@ export default async function AdminPage() {
     .sort({ createdAt: -1 })
     .limit(10)
     .select(
-      "bookingId customerName customerPhone room date timeSlot status paymentMethod totalAmount createdAt"
+      "bookingId customerName customerPhone room date timeSlot status paymentMethod totalAmount createdAt",
     )
     .lean();
 

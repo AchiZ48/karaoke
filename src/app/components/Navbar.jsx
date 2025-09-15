@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useMemo } from "react";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -30,8 +30,16 @@ export default function Navbar() {
         { href: "/promotions", label: "Promotions" },
         { href: "/booking", label: "Booking" },
         { href: "/my-bookings", label: "My Booking" },
-        { href: "/profile" , icon: <img src="/profile.svg" alt="" width={20}/> },
-        { action: () => signOut(), label: "Log out", button: true, variant: "danger" },
+        {
+          href: "/profile",
+          icon: <img src="/profile.svg" alt="" width={20} />,
+        },
+        {
+          action: () => signOut(),
+          label: "Log out",
+          button: true,
+          variant: "danger",
+        },
       ];
     }
 
@@ -44,7 +52,12 @@ export default function Navbar() {
         { href: "/booking", label: "Booking" },
         { href: "/admin", label: "Admin Panel" },
         { href: "/profile", label: "Profile" },
-        { action: () => signOut(), label: "Log out", button: true, variant: "danger" },
+        {
+          action: () => signOut(),
+          label: "Log out",
+          button: true,
+          variant: "danger",
+        },
       ];
     }
 
@@ -54,14 +67,19 @@ export default function Navbar() {
 
   return (
     <nav className="backdrop-blur-md fixed inset-x-0 top-0 bg-indigo-500/70 dark:bg-neutral-900/70 text-white z-50 max-h-20 py-4">
-      <div className="max-w-screen-2xl flex justify-between items-center mx-auto my-0 px-8  [container-type:inline-size]">        
-        <Link href="/#landing" className="text-[1.75rem] font-bold cursor-pointer flex items-center gap-2">
-            <img src='/logo2.svg' alt="BornToSing"className="h-8 sm:h-10 md:h-12 w-auto shrink-0" ></img>
-            BornToSing
+      <div className="max-w-screen-2xl flex justify-between items-center mx-auto my-0 px-8  [container-type:inline-size]">
+        <Link
+          href="/#landing"
+          className="text-[1.75rem] font-bold cursor-pointer flex items-center gap-2"
+        >
+          <img
+            src="/logo2.svg"
+            alt="BornToSing"
+            className="h-8 sm:h-10 md:h-12 w-auto shrink-0"
+          ></img>
+          BornToSing
         </Link>
         <div className=" gap-8 items-center hidden [@container(min-width:850px)]:flex">
-          
-
           <ul className="flex flex-wrap gap-2 align-middle">
             {items.map((it, i) => (
               <li key={i}>
@@ -77,7 +95,9 @@ export default function Navbar() {
                     {it.label}
                   </button>
                 ) : it.disabled ? (
-                  <span className="py-2 bg-red-500 px-3 opacity-70">{it.label}</span>
+                  <span className="py-2 bg-red-500 px-3 opacity-70">
+                    {it.label}
+                  </span>
                 ) : (
                   <Link
                     href={it.href}
