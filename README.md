@@ -1,4 +1,4 @@
-﻿## วิธีการรันโปรเจ็ค
+## วิธีการรันโปรเจ็ค
 **0. สิ่งที่จำเป็น**
 - ส่ง Username Github ลง Discord เพื่อเพิ่มเข้าทีม
 - Node.js
@@ -29,5 +29,5 @@ npm install
 **4. รันคำสั่งตามนี้**<br>
 - ในหน้า Command Prompt<br>
 ```console
-nom run dev
+npm run dev
 ```
