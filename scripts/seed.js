@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const uri =
-  "mongodb+srv://achiz:A124563a@karaoke.xhh0ave.mongodb.net/?retryWrites=true&w=majority&appName=Karaoke";
+  "mongodb+srv://achiz:A124563a@karaoke.xhh0ave.mongodb.net/?retryWrites=true&w=majority&appName=Karaoke";//
 if (!uri) {
   console.error("❌ Missing MONGODB_URI in env");
   process.exit(1);
