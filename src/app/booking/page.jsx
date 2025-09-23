@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { loadStripe } from "@stripe/stripe-js";
 import { useToast } from "../components/toast/ToastProvider";
 
 const timeSlots = [
@@ -37,7 +36,6 @@ export default function BookingPage() {
     date: "",
     timeSlot: timeSlots[0],
     numberOfPeople: 1,
-    // name/email/phone derived from session on server
     paymentMethod: "PROMPTPAY",
     promotionCode: "",
   });
@@ -154,12 +152,10 @@ export default function BookingPage() {
       setCurrentBookingId(booking.bookingId);
       if (form.paymentMethod === "CASH") {
         setSuccess(`Booking created: ${booking.bookingId}`);
-        // redirect to my bookings
         window.location.href = "/my-bookings";
         return;
       }
       if (form.paymentMethod === "PROMPTPAY") {
-        // initiate Stripe PromptPay
         const payRes = await fetch("/api/payments/promptpay", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,7 +188,6 @@ export default function BookingPage() {
           );
           showToast("PromptPay initiated");
         }
-        // Start polling for status
         startPollingStatus(booking.bookingId);
         return;
       }
@@ -202,11 +197,9 @@ export default function BookingPage() {
     }
   }
 
-  // no Stripe popup; showing our own modal with QR
-
   function startPollingStatus(bookingId) {
     let tries = 0;
-    const maxTries = 180; // up to ~15 minutes @ 5s
+    const maxTries = 180;
     const iv = setInterval(async () => {
       tries += 1;
       try {
@@ -232,7 +225,6 @@ export default function BookingPage() {
     }, 5000);
   }
 
-  // Handle 15-minute expiry countdown and auto-cancel
   useEffect(() => {
     if (!expiresAt || !currentBookingId) return;
     const tick = () => {
@@ -240,7 +232,6 @@ export default function BookingPage() {
       setRemainingSec(diff);
       if (diff <= 0 && !expiredHandled) {
         setExpiredHandled(true);
-        // auto-cancel pending booking
         fetch(`/api/bookings/${currentBookingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -259,25 +250,31 @@ export default function BookingPage() {
     return () => clearInterval(iv);
   }, [expiresAt, currentBookingId, expiredHandled]);
 
-  // using global toast provider (useToast)
-
   return (
-    <main>
-      <div className="mx-auto justify-center flex py-5 px-2">
-        <div className="container p-4 max-w-3xl bg-white dark:bg-neutral-900 border-2 border-black dark:border-neutral-700 rounded-4xl py-5 px-6 text-black dark:text-white ">
-          {/* toasts are global via ToastProvider */}
-          <h1 className="text-2xl font-semibold mb-4">Book a Room</h1>
-
-          {/* notifications handled via global toasts */}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6B3FA0] via-[#6B3FA0] to-[#4B2C6B]">
+      <div className="flex justify-center items-center w-full py-10 px-2">
+        <div className="w-full max-w-lg rounded-3xl shadow-2xl bg-gradient-to-b from-[#6B3FA0] via-[#6B3FA0] to-[#4B2C6B] p-8 border border-white/10 relative">
+          <button
+            className="absolute top-6 right-6 text-white text-2xl font-bold focus:outline-none"
+            onClick={() => window.location.href = "/"}
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <h1 className="text-3xl font-bold text-white text-center mb-2">Book {selectedRoom ? selectedRoom.type + " Room" : "Room"}</h1>
+          <div className="text-white text-center mb-6 text-lg font-medium">
+            {selectedRoom ? selectedRoom.name : "Room"}
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Room */}
             <div>
-              <label className="block mb-1">Room</label>
+              <label className="block mb-2 text-white font-medium">Room</label>
               {loadingRooms ? (
-                <div className="opacity-70">Loading rooms…</div>
+                <div className="opacity-70 text-white">Loading rooms…</div>
               ) : (
                 <select
-                  className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
+                  className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                   value={form.roomNumber}
                   onChange={(e) =>
                     setForm({ ...form, roomNumber: e.target.value })
@@ -292,12 +289,12 @@ export default function BookingPage() {
                 </select>
               )}
             </div>
-
+            {/* Date */}
             <div>
-              <label className="block mb-1">Date</label>
+              <label className="block mb-2 text-white font-medium">Date</label>
               <input
                 type="date"
-                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 min={todayStr}
@@ -305,34 +302,70 @@ export default function BookingPage() {
                 disabled={locked}
               />
             </div>
+            {/* Time Slot */}
             <div>
-              <label className="block mb-1">Time Slot</label>
-              <select
-                className="w-full border-2 border-black rounded-full p-2 bg-white text-black "
-                value={form.timeSlot}
-                onChange={(e) => setForm({ ...form, timeSlot: e.target.value })}
-                disabled={locked}
-              >
+              <label className="block mb-2 text-white font-medium">Time Slot</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {timeSlots.map((t) => (
-                  <option
+                  <button
                     key={t}
-                    value={t}
-                    disabled={!availableSlots.includes(t)}
+                    type="button"
+                    className={`rounded-xl px-2 py-2 text-sm font-semibold transition
+                      ${form.timeSlot === t
+                        ? "bg-white text-[#6B3FA0] shadow"
+                        : availableSlots.includes(t)
+                          ? "bg-white/20 text-white hover:bg-white/40"
+                          : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      }`}
+                    onClick={() => availableSlots.includes(t) && setForm({ ...form, timeSlot: t })}
+                    disabled={!availableSlots.includes(t) || locked}
                   >
                     {t}
-                    {occupiedSlots.includes(t) ? " (unavailable)" : ""}
-                  </option>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
-
+            {/* Name */}
             <div>
-              <label className="block mb-1">Number of People </label>
+              <label className="block mb-2 text-white font-medium">Your Name</label>
+              <input
+                type="text"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                value={session?.user?.name || ""}
+                disabled
+                placeholder="Your name"
+              />
+            </div>
+            {/* Email */}
+            <div>
+              <label className="block mb-2 text-white font-medium">Email</label>
+              <input
+                type="email"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                value={session?.user?.email || ""}
+                disabled
+                placeholder="user@email.com"
+              />
+            </div>
+            {/* Phone */}
+            <div>
+              <label className="block mb-2 text-white font-medium">Phone Number</label>
+              <input
+                type="tel"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                placeholder="Enter your phone number"
+                value={session?.user?.phone || ""}
+                disabled
+              />
+            </div>
+            {/* Number of People */}
+            <div>
+              <label className="block mb-2 text-white font-medium">Number of People</label>
               <input
                 type="number"
                 min={1}
                 max={selectedRoom?.capacity || undefined}
-                className="w-full border-2 border-black rounded-full p-2 bg-white text-black"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                 value={form.numberOfPeople}
                 onChange={(e) => {
                   const val = Number(e.target.value);
@@ -342,112 +375,69 @@ export default function BookingPage() {
                 }}
                 required
                 disabled={locked}
+                placeholder="Enter number of people"
               />
-              {selectedRoom && (
-                <p className="text-sm opacity-70 mt-1">
-                  Capacity: {selectedRoom.capacity} – Price:{" "}
-                  {selectedRoom.price} THB
-                </p>
-              )}
             </div>
-
+            {/* Payment Method */}
             <div>
-              <label className="block mb-1">Promotion</label>
+              <label className="block mb-2 text-white font-medium">Payment Method</label>
               <select
-                className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                value={form.promotionCode}
-                onChange={(e) =>
-                  setForm({ ...form, promotionCode: e.target.value })
-                }
-                disabled={locked}
-              >
-                <option value="">No promotion</option>
-                {promotions.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name} ({p.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-1">Payment Method</label>
-              <select
-                className="w-full border-2 border-black dark:border-neutral-700 rounded-full p-2 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                 value={form.paymentMethod}
-                onChange={(e) =>
-                  setForm({ ...form, paymentMethod: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
                 disabled={locked}
               >
                 <option value="PROMPTPAY">PromptPay</option>
                 <option value="CASH">Cash</option>
               </select>
             </div>
-            {session?.user?.email && (
-              <div className="text-xs opacity-70">
-                Booking will be associated with {session.user.email}
-              </div>
-            )}
+            {/* Promotion Code */}
+            <div>
+              <label className="block mb-2 text-white font-medium">Promotion Code (Optional)</label>
+              <input
+                type="text"
+                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                placeholder="Enter Promotion Code"
+                value={form.promotionCode}
+                onChange={(e) => setForm({ ...form, promotionCode: e.target.value })}
+                disabled={locked}
+              />
+            </div>
+            {/* Total */}
             {selectedRoom && (
-              <p className="text-sm opacity-70 mt-1">
+              <p className="text-sm text-white opacity-80 mt-1">
                 Total: {priceAfterPromo} THB
               </p>
             )}
-
-            <div className="pt-2 inline-flex gap-4 justify-center">
-              {waitingPayment && (
-                <>
-                  <button
-                    type="button"
-                    className="bg-red-500 text-white px-4 py-3 rounded-full"
-                    onClick={() => {
-                      if (!currentBookingId) return;
-                      fetch(`/api/bookings/${currentBookingId}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: "cancel" }),
-                      }).then(() => {
-                        setWaitingPayment(false);
-                        setLocked(false);
-                        setSuccess("Booking cancelled");
-                      });
-                    }}
-                  >
-                    Cancel booking
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-black text-white px-4 py-3 rounded-full"
-                    onClick={() => setShowPromptPay(true)}
-                    disabled={remainingSec === 0}
-                  >
-                    Show PromptPay QR
-                  </button>
-                </>
-              )}
-              {!waitingPayment && (
-                <>
-                  <button
-                    type="submit"
-                    className="bg-black text-white px-4 py-3 rounded-full"
-                    disabled={!session || locked}
-                  >
-                    Confirm Booking
-                  </button>
-                </>
-              )}
+            {/* Buttons */}
+            <div className="flex justify-between gap-4 pt-2">
+              <button
+                type="button"
+                className="bg-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition"
+                onClick={() => window.location.href = "/"}
+                disabled={locked}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-[#6B3FA0] text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-[#5a338c] transition"
+                disabled={!session || locked}
+              >
+                Confirm Booking
+              </button>
             </div>
-
+            {/* Error/Success */}
+            {error && <div className="text-red-300 text-center">{error}</div>}
+            {success && <div className="text-green-200 text-center">{success}</div>}
             {!session && (
-              <div className="mt-2 text-sm">
+              <div className="mt-2 text-sm text-white">
                 {authRequiredMsg}{" "}
                 <a href="/login?callbackUrl=/booking" className="underline">
                   Login
                 </a>
               </div>
             )}
-
             {showPromptPay && qrData && (
               <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div
