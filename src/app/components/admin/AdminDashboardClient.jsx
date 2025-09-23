@@ -200,7 +200,7 @@ export default function AdminDashboardClient({
   }, [showBookingModal, bookingDraft?.date]);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white">
+    <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white py-20">
       <div className="grid grid-cols-12 gap-0">
         {/* Sidebar */}
         <aside className="col-span-12 md:col-span-3 lg:col-span-2 border-r border-neutral-200 dark:border-white/10 p-4">
