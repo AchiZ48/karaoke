@@ -93,8 +93,8 @@ function Register() {
     }
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-700 to-purple-500">
-      <div className="w-full max-w-lg bg-gradient-to-b from-indigo-700 to-purple-500 rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-full max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
         <h1 className="text-3xl font-bold text-center text-white mb-2">
           Create Account
         </h1>
