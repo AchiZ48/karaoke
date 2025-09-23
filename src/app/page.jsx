@@ -10,7 +10,7 @@ export default function Home() {
 
 
       {/* Landing Section */}
-      <section className="flex flex-col items-center justify-center py-20 min-h-screen bg-red-500">
+      <section className="flex flex-col items-center justify-center py-20 min-h-screen ">
         <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
           Ready to <span className="text-[#7b7bbd]">Sing</span> ?
         </h1>
@@ -107,3 +107,5 @@ export default function Home() {
     </main>
   );
 }
+
+/*bg-red-500*/
