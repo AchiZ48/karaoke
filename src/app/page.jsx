@@ -62,15 +62,15 @@ export default function Home() {
           {/* Room Cards */}
           <div className="flex flex-col gap-20">
             {/* Standard Room */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-35">
               <img
                 src="/Standardpicture.png"
                 alt="Standard Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover"
+                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
               />
               <div className="flex-1 flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">Standard Room</h3>
-                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มเล็ก รองรับ 1-4 คน</li>
                   <li>ระบบเสียงมาตรฐาน คมชัด</li>
                   <li>จอขนาดกลางพร้อมไมค์คุณภาพ</li>
@@ -80,15 +80,15 @@ export default function Home() {
               </div>
             </div>
             {/* Premium Room */}
-            <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-10">
+            <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-55">
               <img
                 src="/Premiumpicture.png"
                 alt="Premium Room"
                 className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover"
               />
-              <div className="flex-1 flex flex-col justify-center">
+              <div className="flex-1 flex flex-col justify-center pl-20">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">Premium Room</h3>
-                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-0 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มขนาดกลาง รองรับ 4-8 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียงรอบทิศทาง</li>
                   <li>รองรับปาร์ตี้และการร้องแบบจัดเต็ม</li>
@@ -98,15 +98,15 @@ export default function Home() {
               </div>
             </div>
             {/* VIP Room */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-35">
               <img
                 src="/VIPpicture.png"
                 alt="VIP Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover"
+                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
               />
-              <div className="flex-1 flex flex-col justify-center">
+              <div className="flex-1 flex flex-col justify-center ">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">VIP Room</h3>
-                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มใหญ่ รองรับ 8-15 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียง Hi-end</li>
                   <li>บริการพิเศษ : Private waiter / room service</li>
