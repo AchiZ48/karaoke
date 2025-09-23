@@ -42,7 +42,7 @@ export default function Home() {
           <h2 className="text-5xl font-bold text-[#2d184a] mb-2 mt-4">Our room</h2>
           <div className="h-[2px] w-full bg-[#e5e5f7] my-6"></div>
           {/* Room Cards */}
-          <div className="flex flex-col gap-20">
+          <div className="flex flex-col gap-30">
             {/* Standard Room */}
             <div className="flex flex-col md:flex-row items-center md:items-start gap-35">
               <img
@@ -62,11 +62,11 @@ export default function Home() {
               </div>
             </div>
             {/* Premium Room */}
-            <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-55">
+            <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-35">
               <img
                 src="/Premiumpicture.png"
                 alt="Premium Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover"
+                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover mr-20"
               />
               <div className="flex-1 flex flex-col justify-center pl-20">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">Premium Room</h3>
