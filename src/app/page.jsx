@@ -28,7 +28,7 @@ export default function Home() {
       </header>
 
       {/* Landing Section */}
-      <section className="flex flex-col items-center justify-center py-16">
+      <section className="flex flex-col items-center justify-center py-16 min-h-screen">
         <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
           Ready to <span className="text-[#7b7bbd]">Sing</span> ?
         </h1>
@@ -55,7 +55,7 @@ export default function Home() {
       </section>
 
       {/* Rooms Section */}
-      <section id="rooms" className="w-full pt-16 pb-24 border-t">
+      <section id="rooms" className="w-full pt-16 pb-24 border-t min-h-screen">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-5xl font-bold text-[#2d184a] mb-2 mt-4">Our room</h2>
           <div className="h-[2px] w-full bg-[#e5e5f7] my-6"></div>
