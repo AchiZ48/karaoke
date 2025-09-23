@@ -96,7 +96,7 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               className="block p-3 w-full border border-gray-300 rounded-xl bg-gray-100 dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               type="email"
-              placeholder="adminuser@gmail.com"
+              placeholder="Enter Your email"
               autoComplete="email"
             />
           </div>
@@ -110,7 +110,7 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="block p-3 w-full border border-gray-300 rounded-xl bg-gray-100 dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
                 type={showPassword ? "text" : "password"}
-                placeholder="********"
+                placeholder="Enter your password"
                 autoComplete="current-password"
               />
               <button
