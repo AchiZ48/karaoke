@@ -152,7 +152,7 @@ export default function ProfilePage() {
         ) : (
           <form onSubmit={saveProfile} className="mt-8 space-y-4">
             <div>
-              <label className="block mb-1 font-semibold">Name</label>
+              <label className="block mb-1 font-semibold text-black">Name</label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.name ?? ""}
@@ -161,7 +161,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold">Email</label>
+              <label className="block mb-1 font-semibold text-black">Email</label>
               <input
                 className="w-full border rounded p-2 bg-gray-100 text-black"
                 value={form.email ?? ""}
@@ -169,7 +169,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold">Phone</label>
+              <label className="block mb-1 font-semibold text-black">Phone</label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.phone ?? ""}
@@ -186,7 +186,7 @@ export default function ProfilePage() {
               </button>
               <button
                 type="button"
-                className="px-8 py-2 rounded-lg border font-semibold"
+                className="px-8 py-2 rounded-lg border font-semibold text-black"
                 onClick={() => {
                   setForm(original);
                   setEditing(false);
