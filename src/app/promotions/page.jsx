@@ -14,7 +14,7 @@ export default async function PromotionsPage() {
 
   return (
     <main className="bg-white min-h-screen">
-      <div className="container mx-auto py-12 max-w-3xl">
+      <div className="container mx-auto py-12 max-w-3xl mt-16">
         <h1 className="text-3xl font-bold text-center mb-10">
           <span className="text-[#23235B]">Active </span>
           <span className="text-[#5B5B8C]">Promotions</span>
@@ -23,7 +23,7 @@ export default async function PromotionsPage() {
           {promos.map((p) => (
             <div
               key={p._id}
-              className="rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-br from-[#7b7bbd] to-[#2d184a] text-white "
+              className="rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white"
             >
               <div className="text-lg font-bold mb-2">{p.name} !</div>
               <div className="text-sm mb-4 flex items-center gap-2 flex-wrap">
