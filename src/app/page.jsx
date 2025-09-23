@@ -7,25 +7,7 @@ export default function Home() {
   return (
     <main className="bg-white min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white font-bold text-lg">
-          <span className="mr-2">🎤</span> Borntosing
-        </div>
-        <nav className="flex items-center gap-6">
-          <a href="#" className="text-white font-medium hover:underline">Home</a>
-          <a href="#rooms" className="text-white font-medium hover:underline">Room</a>
-          <a href="#" className="text-white font-medium hover:underline">Promotions</a>
-          <button
-            className="ml-6 px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition"
-            onClick={() => signIn()}
-          >
-            Login
-          </button>
-          <button className="px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition">
-            Register
-          </button>
-        </nav>
-      </header>
+
 
       {/* Landing Section */}
       <section className="flex flex-col items-center justify-center py-16 min-h-screen">
