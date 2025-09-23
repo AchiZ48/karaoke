@@ -253,7 +253,7 @@ export default function BookingPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-white py-16">
       <div className="flex justify-center items-center w-full py-10 px-2">
-        <div className="w-full max-w-lg rounded-3xl shadow-2xl bg-gradient-to-b from-[#7b7bbd]  to-[#2A2A45] p-8 border border-white/10 relative">
+        <div className="w-full max-w-xl rounded-3xl shadow-2xl bg-gradient-to-b from-[#7b7bbd]  to-[#2A2A45] p-8 border border-white/10 relative">
           <h1 className="text-2xl font-semibold text-white text-center mb-6">Book a Room</h1>
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Room */}
