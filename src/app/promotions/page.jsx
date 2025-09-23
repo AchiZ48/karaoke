@@ -16,9 +16,10 @@ export default async function PromotionsPage() {
     <main className="bg-white min-h-screen">
       <div className="container mx-auto py-12 max-w-3xl">
         <h1 className="text-3xl font-bold text-center mb-10">
-          <span className="text-black dark:text-white">Active </span>
-          <span className="text-[#5B5B8C] dark:text-[#A3A3D1]">Promotions</span>
+          <span className="text-[#23235B]">Active </span>
+          <span className="text-[#5B5B8C]">Promotions</span>
         </h1>
+        <prompt />
         <div className="flex flex-col gap-8">
           {promos.map((p) => (
             <div
@@ -32,12 +33,6 @@ export default async function PromotionsPage() {
                   : p.discountType === "PERCENT"
                   ? `Get ${p.discountValue}% off`
                   : `Get ${p.discountValue} THB off`}
-                {p.condition && (
-                  <>
-                    <br />
-                    <span className="opacity-80">{p.condition}</span>
-                  </>
-                )}
                 <br />
                 <span className="opacity-80">with code :</span>
               </div>
