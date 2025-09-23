@@ -6,7 +6,7 @@ export default function Home() {
   const { data: session } = useSession();
 
   return (
-    <main className="bg-purple-300 dark:bg-amber-400 dark:text-white">
+    <main className="bg-purple-300 dark:bg-violet-700 dark:text-white">
       {/* Landing Section */}
       <section
         id="landing"
