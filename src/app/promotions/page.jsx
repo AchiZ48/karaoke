@@ -13,30 +13,41 @@ export default async function PromotionsPage() {
     .lean();
 
   return (
-    <main>
-      <div className="container mx-auto p-4 max-w-4xl min-h-screen text-black dark:text-white">
-        <h1 className="text-2xl font-semibold mb-4">Promotions</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <main className="bg-white min-h-screen">
+      <div className="container mx-auto py-12 max-w-3xl">
+        <h1 className="text-3xl font-bold text-center mb-10">
+          <span className="text-[#23235B]">Active </span>
+          <span className="text-[#5B5B8C]">Promotions</span>
+        </h1>
+        <div className="flex flex-col gap-8">
           {promos.map((p) => (
             <div
               key={p._id}
-              className="p-4 border rounded border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900"
+              className="rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-br from-[#6C63FF] to-[#3F326F] text-white"
             >
-              <div className="font-medium">{p.name}</div>
-              <div className="text-sm opacity-70">Code: {p.code}</div>
-              <div className="text-sm">
-                {p.discountType === "PERCENT"
-                  ? `${p.discountValue}% off`
-                  : `${p.discountValue} THB off`}
+              <div className="text-lg font-bold mb-2">{p.name} !</div>
+              <div className="text-sm mb-4 flex items-center gap-2 flex-wrap">
+                {p.description
+                  ? p.description
+                  : p.discountType === "PERCENT"
+                  ? `Get ${p.discountValue}% off`
+                  : `Get ${p.discountValue} THB off`}
+                <span className="opacity-80">with code :</span>
               </div>
-              <div className="text-xs opacity-60 mt-1">
-                Valid: {new Date(p.startDate).toLocaleDateString()} -{" "}
-                {new Date(p.endDate).toLocaleDateString()}
+              <button
+                className="bg-white text-[#3F326F] font-semibold px-5 py-2 rounded-lg shadow mt-2 text-base"
+                style={{ letterSpacing: 1 }}
+                disabled
+              >
+                {p.code}
+              </button>
+              <div className="text-xs opacity-80 mt-4">
+                Valid: {new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}
               </div>
             </div>
           ))}
           {promos.length === 0 && (
-            <div className="opacity-70">No active promotions.</div>
+            <div className="opacity-70 text-center">No active promotions.</div>
           )}
         </div>
       </div>
