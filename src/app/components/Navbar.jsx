@@ -64,12 +64,7 @@ export default function Navbar() {
   }, [session, status, role]);
 
   return (
-    <nav
-      className="fixed inset-x-0 top-0 z-50 max-h-20 py-4"
-      style={{
-        background: "linear-gradient(90deg, #7B7BCB 0%, #2B0A3D 100%)",
-      }}
-    >
+    <nav className="fixed inset-x-0 top-0 z-50 max-h-20 py-4 bg-linear-to-r from-[#7B7BCB] to-[#2B0A3D]">
       <div className="max-w-screen-2xl flex justify-between items-center mx-auto px-8">
         <Link
           href="/#landing"
