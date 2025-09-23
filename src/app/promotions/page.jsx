@@ -1,45 +1,147 @@
-import { connectMongoDB } from "../../../lib/mongodb";
-import Promotion from "../../../models/promotion";
+"use client";
+import { useSession, signIn } from "next-auth/react";
 
-export default async function PromotionsPage() {
-  await connectMongoDB();
-  const now = new Date();
-  const promos = await Promotion.find({
-    isActive: true,
-    startDate: { $lte: now },
-    endDate: { $gte: now },
-  })
-    .sort({ createdAt: -1 })
-    .lean();
+export default function Home() {
+  const { data: session } = useSession();
 
   return (
-    <main>
-      <div className="container mx-auto p-4 max-w-4xl min-h-screen text-black dark:text-white">
-        <h1 className="text-2xl font-semibold mb-4">Promotions</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {promos.map((p) => (
-            <div
-              key={p._id}
-              className="p-4 border rounded border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900"
-            >
-              <div className="font-medium">{p.name}</div>
-              <div className="text-sm opacity-70">Code: {p.code}</div>
-              <div className="text-sm">
-                {p.discountType === "PERCENT"
-                  ? `${p.discountValue}% off`
-                  : `${p.discountValue} THB off`}
-              </div>
-              <div className="text-xs opacity-60 mt-1">
-                Valid: {new Date(p.startDate).toLocaleDateString()} -{" "}
-                {new Date(p.endDate).toLocaleDateString()}
+    <main className="bg-white min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="w-full bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-white font-bold text-lg">
+          <span className="mr-2">🎤</span> Borntosing
+        </div>
+        <nav className="flex items-center gap-6">
+          <a href="#" className="text-white font-medium hover:underline">Home</a>
+          <a href="#rooms" className="text-white font-medium hover:underline">Room</a>
+          <a href="#" className="text-white font-medium hover:underline">Promotions</a>
+          <button
+            className="ml-6 px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition"
+            onClick={() => signIn()}
+          >
+            Login
+          </button>
+          <button className="px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition">
+            Register
+          </button>
+        </nav>
+      </header>
+
+      {/* Landing Section */}
+      <section className="flex flex-col items-center justify-center py-16">
+        <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
+          Ready to <span className="text-[#7b7bbd]">Sing</span> ?
+        </h1>
+        <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
+          Login to reserve your perfect room today
+        </p>
+        {!session && (
+          <button
+            className="px-8 py-2 bg-[#7b7bbd] text-white rounded-lg font-semibold shadow hover:bg-[#2d184a] transition mb-8"
+            onClick={() => signIn()}
+          >
+            Login
+          </button>
+        )}
+
+        {/* Promotion Box */}
+        <div className="w-full max-w-3xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
+          style={{ boxShadow: "4px 4px 12px 0 rgba(45,24,74,0.12)" }}>
+          <h2 className="text-2xl font-bold mb-2">Special Promotion This Month !</h2>
+          <p className="mb-4">Get 20% off on all VIP rooms with code :</p>
+          <span className="bg-white text-[#2d184a] px-6 py-2 rounded-lg font-bold text-lg shadow">
+            SING2025
+          </span>
+        </div>
+      </section>
+
+      {/* Rooms Section */}
+      <section id="rooms" className="w-full py-16 border-t">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-4xl font-bold text-[#2d184a] mb-6">
+            Our room
+          </h2>
+          <div className="border-b mb-12"></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {/* Standard Room */}
+            <div className="flex flex-col md:flex-row items-center">
+              <img
+                src="/images/standard-room.jpg"
+                alt="Standard Room"
+                className="rounded-2xl shadow-lg w-[320px] h-[220px] object-cover mb-6 md:mb-0 md:mr-8"
+              />
+              <div>
+                <h3 className="text-2xl font-bold text-[#2d184a] mb-4">Standard Room</h3>
+                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                  <li>เหมาะสำหรับลูกค้ากลุ่มเล็ก รองรับ 1-4 คน</li>
+                  <li>ระบบเสียงมาตรฐาน คมชัด</li>
+                  <li>จอขนาดกลางพร้อมไมค์คุณภาพ</li>
+                  <li>มีทั้งหมด 4 ห้อง</li>
+                  <li>ราคา 350 บาท/ชั่วโมง</li>
+                </ul>
               </div>
             </div>
-          ))}
-          {promos.length === 0 && (
-            <div className="opacity-70">No active promotions.</div>
-          )}
+            {/* Premium Room */}
+            <div className="flex flex-col md:flex-row items-center">
+              <img
+                src="/images/premium-room.jpg"
+                alt="Premium Room"
+                className="rounded-2xl shadow-lg w-[320px] h-[220px] object-cover mb-6 md:mb-0 md:mr-8"
+              />
+              <div>
+                <h3 className="text-2xl font-bold text-[#2d184a] mb-4">Premium Room</h3>
+                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                  <li>เหมาะสำหรับลูกค้ากลุ่มขนาดกลาง รองรับ 4-8 คน</li>
+                  <li>จอขนาดใหญ่ Full + ระบบเสียงรอบทิศทาง</li>
+                  <li>รองรับปาร์ตี้และการร้องแบบจัดเต็ม</li>
+                  <li>มีทั้งหมด 4 ห้อง</li>
+                  <li>ราคา 550 บาท/ชั่วโมง</li>
+                </ul>
+              </div>
+            </div>
+            {/* VIP Room */}
+            <div className="flex flex-col md:flex-row items-center">
+              <img
+                src="/images/vip-room.jpg"
+                alt="VIP Room"
+                className="rounded-2xl shadow-lg w-[320px] h-[220px] object-cover mb-6 md:mb-0 md:mr-8"
+              />
+              <div>
+                <h3 className="text-2xl font-bold text-[#2d184a] mb-4">VIP Room</h3>
+                <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                  <li>เหมาะสำหรับลูกค้ากลุ่มใหญ่ รองรับ 8-15 คน</li>
+                  <li>จอขนาดใหญ่ Full + ระบบเสียง Hi-end</li>
+                  <li>บริการพิเศษ : Private waiter / room service</li>
+                  <li>เหมาะสำหรับงานเลี้ยง วันเกิด หรือปาร์ตี้สุด Exclusive</li>
+                  <li>มีทั้งหมด 2 ห้อง</li>
+                  <li>ราคา 1200 บาท/ชั่วโมง</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="w-full bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white py-12 mt-auto">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start px-4 gap-8">
+          <div>
+            <h3 className="text-2xl font-bold mb-2">CONTACT US</h3>
+            <p className="flex items-center gap-2 font-semibold">
+              <span>🎤</span> Borntosing
+            </p>
+          </div>
+          <div>
+            <p className="font-bold mb-1">Location</p>
+            <p>
+              1518 Pracharat 1 Road, Wongsawang, Bang Sue,<br />
+              Bangkok 10800, Thailand.
+            </p>
+            <p className="font-bold mt-4 mb-1">Open Monday - Sunday:</p>
+            <p>10:00 a.m. - 22:00 p.m.</p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
