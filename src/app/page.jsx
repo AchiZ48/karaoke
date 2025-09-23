@@ -49,7 +49,7 @@ export default function Home() {
             {/* Standard Room */}
             <div className="flex flex-col items-center">
               <img
-                src="/images/standard-room.jpg"
+                src="/Standardpicture.png"
                 alt="Standard Room"
                 className="rounded-2xl shadow-lg w-full mb-6 object-cover"
                 style={{ maxHeight: 220 }}
@@ -66,7 +66,7 @@ export default function Home() {
             {/* Premium Room */}
             <div className="flex flex-col items-center">
               <img
-                src="/images/premium-room.jpg"
+                src="/Premiumpicture.png"
                 alt="Premium Room"
                 className="rounded-2xl shadow-lg w-full mb-6 object-cover"
                 style={{ maxHeight: 220 }}
@@ -83,7 +83,7 @@ export default function Home() {
             {/* VIP Room */}
             <div className="flex flex-col items-center">
               <img
-                src="/images/vip-room.jpg"
+                src="/VIPpicture.png"
                 alt="VIP Room"
                 className="rounded-2xl shadow-lg w-full mb-6 object-cover"
                 style={{ maxHeight: 220 }}
