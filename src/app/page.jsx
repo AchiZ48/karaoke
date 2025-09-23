@@ -7,28 +7,10 @@ export default function Home() {
   return (
     <main className="bg-white min-h-screen flex flex-col">
       {/* Header */}
-      <header className="w-full bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] py-6 px-8 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white font-bold text-lg">
-          <span className="mr-2">🎤</span> Borntosing
-        </div>
-        <nav className="flex items-center gap-6">
-          <a href="#" className="text-white font-medium hover:underline">Home</a>
-          <a href="#rooms" className="text-white font-medium hover:underline">Room</a>
-          <a href="#" className="text-white font-medium hover:underline">Promotions</a>
-          <button
-            className="ml-6 px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition"
-            onClick={() => signIn()}
-          >
-            Login
-          </button>
-          <button className="px-5 py-2 bg-white text-[#2d184a] rounded font-semibold shadow hover:bg-gray-100 transition">
-            Register
-          </button>
-        </nav>
-      </header>
+
 
       {/* Landing Section */}
-      <section className="flex flex-col items-center justify-center py-20">
+      <section className="flex flex-col items-center justify-center py-20 min-h-screen bg-red-500">
         <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
           Ready to <span className="text-[#7b7bbd]">Sing</span> ?
         </h1>
@@ -55,7 +37,7 @@ export default function Home() {
       </section>
 
       {/* Rooms Section */}
-      <section id="rooms" className="w-full py-16 border-t">
+      <section id="rooms" className="w-full py-16 border-t min-h-screen">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-4xl font-bold text-[#2d184a] mb-6">
             Our room
@@ -121,25 +103,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white py-12 mt-auto">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start px-4 gap-8">
-          <div>
-            <h3 className="text-2xl font-bold mb-2">CONTACT US</h3>
-            <p className="flex items-center gap-2 font-semibold">
-              <span>🎤</span> Borntosing
-            </p>
-          </div>
-          <div>
-            <p className="font-bold mb-1">Location</p>
-            <p>
-              1518 Pracharat 1 Road, Wongsawang, Bang Sue,<br />
-              Bangkok 10800, Thailand.
-            </p>
-            <p className="font-bold mt-4 mb-1">Open Monday - Sunday:</p>
-            <p>10:00 a.m. - 22:00 p.m.</p>
-          </div>
-        </div>
-      </footer>
+      
     </main>
   );
 }
