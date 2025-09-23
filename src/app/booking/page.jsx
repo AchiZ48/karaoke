@@ -251,9 +251,9 @@ export default function BookingPage() {
   }, [expiresAt, currentBookingId, expiredHandled]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6B3FA0] via-[#6B3FA0] to-[#4B2C6B] py-16">
+    <main className="min-h-screen flex items-center justify-center bg-white py-16">
       <div className="flex justify-center items-center w-full py-10 px-2">
-        <div className="w-full max-w-lg rounded-3xl shadow-2xl bg-gradient-to-b from-[#6B3FA0] via-[#6B3FA0] to-[#4B2C6B] p-8 border border-white/10 relative">
+        <div className="w-full max-w-lg rounded-3xl shadow-2xl bg-gradient-to-b from-[#7b7bbd]  to-[#2A2A45] p-8 border border-white/10 relative">
           <h1 className="text-2xl font-semibold text-white text-center mb-6">Book a Room</h1>
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Room */}
@@ -391,7 +391,7 @@ export default function BookingPage() {
               </button>
               <button
                 type="submit"
-                className="bg-[#6B3FA0] text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-[#5a338c] transition"
+                className="bg-[#6768AB] text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-[#5a338c] transition"
                 disabled={!session || locked}
               >
                 Confirm Booking
