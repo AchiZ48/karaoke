@@ -9,20 +9,16 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const role = session?.user?.role;
 
-  // เมนูตามเงื่อนไขที่มึงต้องการ
   const items = useMemo(() => {
-    // 1) ยังไม่ล็อกอิน (!session)
     if (status !== "loading" && !session) {
       return [
         { href: "/#landing", label: "Home" },
         { href: "/#rooms", label: "Room" },
         { href: "/promotions", label: "Promotions" },
-        { href: "/login", label: "Log in" },
-        { href: "/register", label: "Register" },
+        { href: "/login", label: "Login", button: true },
+        { href: "/register", label: "Register", button: true },
       ];
     }
-
-    // 2) ล็อกอินแล้ว แต่ role !== admin
     if (session && role !== "admin") {
       return [
         { href: "/#landing", label: "Home" },
@@ -42,8 +38,6 @@ export default function Navbar() {
         },
       ];
     }
-
-    // 3) ล็อกอินแล้ว และ role === admin
     if (session && role === "admin") {
       return [
         { href: "/#landing", label: "Home" },
@@ -60,67 +54,73 @@ export default function Navbar() {
         },
       ];
     }
-
-    // ระหว่างโหลด
     return [
       { href: "/#landing", label: "Home" },
       { href: "/#rooms", label: "Room" },
       { href: "/promotions", label: "Promotions" },
-      { href: "/login", label: "Log in" },
-      { href: "/register", label: "Register" },
+      { href: "/login", label: "Login", button: true },
+      { href: "/register", label: "Register", button: true },
     ];
   }, [session, status, role]);
 
   return (
-    <nav className="backdrop-blur-md fixed inset-x-0 top-0 bg-indigo-500/70 dark:bg-neutral-900/70 text-white z-50 max-h-20 py-4">
-      <div className="max-w-screen-2xl flex justify-between items-center mx-auto my-0 px-8  [container-type:inline-size]">
+    <nav
+      className="fixed inset-x-0 top-0 z-50 max-h-20 py-4"
+      style={{
+        background: "linear-gradient(90deg, #7B7BCB 0%, #2B0A3D 100%)",
+      }}
+    >
+      <div className="max-w-screen-2xl flex justify-between items-center mx-auto px-8">
         <Link
           href="/#landing"
-          className="text-[1.75rem] font-bold cursor-pointer flex items-center gap-2"
+          className="text-[1.75rem] font-bold cursor-pointer flex items-center gap-2 text-white"
         >
           <img
             src="/logo2.svg"
             alt="BornToSing"
             className="h-8 sm:h-10 md:h-12 w-auto shrink-0"
-          ></img>
-          BornToSing
+          />
+          Borntosing
         </Link>
-        <div className=" gap-8 items-center hidden [@container(min-width:850px)]:flex">
-          <ul className="flex flex-wrap gap-2 align-middle">
-            {items.map((it, i) => (
-              <li key={i}>
-                {it.button ? (
-                  <button
-                    onClick={it.action}
-                    className={`  ${
-                      it.variant === "danger"
-                        ? "inline-flex items-center rounded-full px-3 py-2 text-sm md:text-base font-bold bg-red-400 text-orange-100 shadow-[0_4px_0_0_theme(colors.violet.900)] transition-[transform,box-shadow] duration-150 ease-out hover:translate-y-0.5 hover:shadow-[0_1px_0_0_theme(colors.violet.900)] active:translate-y-1 active:shadow-[0_0px_0_0_theme(colors.violet.900)] "
-                        : "bg-gray-600 border-gray-600 hover:opacity-90"
-                    }`}
-                  >
-                    {it.label}
-                  </button>
-                ) : it.disabled ? (
-                  <span className="py-2 bg-red-500 px-3 opacity-70">
-                    {it.label}
-                  </span>
-                ) : (
+        <div className="flex gap-8 items-center">
+          <ul className="flex gap-8 items-center">
+            {items
+              .filter((it) => !it.button)
+              .map((it, i) => (
+                <li key={i}>
                   <Link
                     href={it.href}
-                    className="inline-flex items-center rounded-full px-3 py-2 min-h-10 min-w-10 text-sm 
-                    md:text-base font-bold bg-orange-100 text-violet-900
-                    shadow-[0_4px_0_0_theme(colors.violet.900)]
-                    transition-[transform,box-shadow] duration-150 ease-out
-                    hover:translate-y-0.5 hover:shadow-[0_1px_0_0_theme(colors.violet.900)]
-                    active:translate-y-1 active:shadow-[0_0px_0_0_theme(colors.violet.900)]"
+                    className="text-white text-base font-medium hover:opacity-80 transition"
                   >
                     {it.label}
                     {it.icon}
                   </Link>
-                )}
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
+          <div className="flex gap-4">
+            {items
+              .filter((it) => it.button)
+              .map((it, i) =>
+                it.action ? (
+                  <button
+                    key={i}
+                    onClick={it.action}
+                    className="bg-white text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-gray-100 transition"
+                  >
+                    {it.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={i}
+                    href={it.href}
+                    className="bg-white text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-gray-100 transition"
+                  >
+                    {it.label}
+                  </Link>
+                )
+              )}
+          </div>
         </div>
       </div>
     </nav>
