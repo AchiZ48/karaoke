@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-// Navbar is now in layout
 import { useToast } from "../components/toast/ToastProvider";
 
 export default function ProfilePage() {
@@ -95,36 +94,65 @@ export default function ProfilePage() {
   }
 
   return (
-    <main>
-      <div className="container mx-auto p-4 max-w-3xl min-h-screen">
-        <h1 className="text-2xl font-semibold mb-4">My Profile</h1>
-        {/* notifications moved to global toasts */}
+    <main className="min-h-screen bg-[#f8f8fa] py-10">
+      <div className="mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative" style={{ boxShadow: "4px 8px 16px #e0e0e0" }}>
+        {/* Profile Header */}
+        <div className="flex items-center gap-6 mb-8">
+          <div className="w-20 h-20 rounded-full bg-gray-300 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+            {/* Profile image placeholder */}
+            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" className="text-gray-400">
+              <circle cx="12" cy="8" r="4" fill="#e0e0e0"/>
+              <rect x="4" y="16" width="16" height="6" rx="3" fill="#e0e0e0"/>
+            </svg>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-black">{form.name || "-"}</div>
+            <div className="text-base text-gray-600">{form.email || "-"}</div>
+          </div>
+        </div>
 
+        {/* Profile Details */}
+        <div className="divide-y divide-gray-300 bg-white rounded-xl overflow-hidden">
+          <div className="flex items-center px-6 py-5">
+            <div className="w-1/3 font-semibold text-black">Name</div>
+            <div className="flex-1 text-gray-600">{form.name || "-"}</div>
+          </div>
+          <div className="flex items-center px-6 py-5">
+            <div className="w-1/3 font-semibold text-black">Email account</div>
+            <div className="flex-1 text-gray-600">{form.email || "-"}</div>
+          </div>
+          <div className="flex items-center px-6 py-5">
+            <div className="w-1/3 font-semibold text-black">Phone number</div>
+            <div className="flex-1 text-gray-600">{form.phone || "-"}</div>
+          </div>
+          <div className="flex items-center px-6 py-5">
+            <div className="w-1/3 font-semibold text-black">Password</div>
+            <div className="flex-1 flex flex-col items-end">
+              <span className="tracking-widest text-lg text-gray-600">**********</span>
+              <button
+                className="text-xs text-[#5b5b8c] underline mt-1"
+                onClick={() => setShowPwdModal(true)}
+              >
+                Change password ?
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit/Save/Cancel Button */}
         {!editing ? (
-          <div className="space-y-3 mb-8">
-            <div>
-              <div className="text-sm text-gray-500">Name</div>
-              <div className="text-base">{form.name || "-"}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-500">Email</div>
-              <div className="text-base">{form.email || "-"}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-500">Phone</div>
-              <div className="text-base">{form.phone || "-"}</div>
-            </div>
+          <div className="flex justify-end mt-8">
             <button
-              className="bg-black text-white px-4 py-2 rounded"
+              className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
               onClick={() => setEditing(true)}
             >
               Edit
             </button>
           </div>
         ) : (
-          <form onSubmit={saveProfile} className="space-y-3 mb-8">
+          <form onSubmit={saveProfile} className="mt-8 space-y-4">
             <div>
-              <label className="block mb-1">Name</label>
+              <label className="block mb-1 font-semibold">Name</label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.name ?? ""}
@@ -133,7 +161,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1">Email</label>
+              <label className="block mb-1 font-semibold">Email</label>
               <input
                 className="w-full border rounded p-2 bg-gray-100 text-black"
                 value={form.email ?? ""}
@@ -141,7 +169,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1">Phone</label>
+              <label className="block mb-1 font-semibold">Phone</label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.phone ?? ""}
@@ -149,16 +177,16 @@ export default function ProfilePage() {
                 required
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-end">
               <button
-                className="bg-black text-white px-4 py-2 rounded"
+                className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
                 type="submit"
               >
                 Save
               </button>
               <button
                 type="button"
-                className="px-4 py-2 rounded border"
+                className="px-8 py-2 rounded-lg border font-semibold"
                 onClick={() => {
                   setForm(original);
                   setEditing(false);
@@ -170,21 +198,26 @@ export default function ProfilePage() {
           </form>
         )}
 
-        <h2 className="text-xl font-semibold mb-2">Change Password</h2>
-        <button
-          className="bg-black text-white px-4 py-2 rounded"
-          onClick={() => setShowPwdModal(true)}
-        >
-          Open Change Password
-        </button>
+        {/* Close Button */}
+        {!editing && (
+          <div className="flex justify-center mt-8">
+            <button
+              className="w-48 bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white py-2 rounded-lg font-semibold shadow"
+              onClick={() => redirect("/")}
+            >
+              Close
+            </button>
+          </div>
+        )}
 
+        {/* Change Password Modal */}
         {showPwdModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
               className="absolute inset-0 bg-black/50"
               onClick={() => setShowPwdModal(false)}
             />
-            <div className="relative bg-white text-black rounded-lg p-4 w-full max-w-md shadow-xl">
+            <div className="relative bg-white text-black rounded-lg p-6 w-full max-w-md shadow-xl">
               <div className="flex items-center justify-between mb-2">
                 <div className="font-semibold">Change Password</div>
                 <button
@@ -234,7 +267,7 @@ export default function ProfilePage() {
                     Cancel
                   </button>
                   <button
-                    className="bg-black text-white px-4 py-2 rounded"
+                    className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-4 py-2 rounded"
                     type="submit"
                   >
                     Change Password
