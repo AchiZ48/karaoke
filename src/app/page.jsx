@@ -1,6 +1,5 @@
 "use client";
 import { useSession, signIn } from "next-auth/react";
-import RoomCards from "./components/RoomCards";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -58,10 +57,66 @@ export default function Home() {
       {/* Rooms Section */}
       <section id="rooms" className="w-full py-16 border-t">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#2d184a] mb-10">
+          <h2 className="text-4xl font-bold text-[#2d184a] mb-6">
             Our room
           </h2>
-          <RoomCards />
+          <p className="text-xl font-semibold text-[#2d184a] mb-12">
+            เลือกห้องที่เหมาะกับคุณ พร้อมระบบเสียงและบรรยากาศสุดพิเศษสำหรับทุกโอกาส
+          </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {/* Standard Room */}
+            <div className="flex flex-col items-center">
+              <img
+                src="/images/standard-room.jpg"
+                alt="Standard Room"
+                className="rounded-2xl shadow-lg w-full mb-6 object-cover"
+                style={{ maxHeight: 220 }}
+              />
+              <h3 className="text-2xl font-bold text-[#2d184a] mb-4">Standard Room</h3>
+              <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <li>เหมาะสำหรับลูกค้ากลุ่มเล็ก รองรับ 1-4 คน</li>
+                <li>ระบบเสียงมาตรฐาน คมชัด</li>
+                <li>จอขนาดกลางพร้อมไมค์คุณภาพ</li>
+                <li>มีทั้งหมด 4 ห้อง</li>
+                <li>ราคา 350 บาท/ชั่วโมง</li>
+              </ul>
+            </div>
+            {/* Premium Room */}
+            <div className="flex flex-col items-center">
+              <img
+                src="/images/premium-room.jpg"
+                alt="Premium Room"
+                className="rounded-2xl shadow-lg w-full mb-6 object-cover"
+                style={{ maxHeight: 220 }}
+              />
+              <h3 className="text-2xl font-bold text-[#2d184a] mb-4">Premium Room</h3>
+              <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <li>เหมาะสำหรับลูกค้ากลุ่มขนาดกลาง รองรับ 4-8 คน</li>
+                <li>จอขนาดใหญ่ Full + ระบบเสียงรอบทิศทาง</li>
+                <li>รองรับปาร์ตี้และการร้องแบบจัดเต็ม</li>
+                <li>มีทั้งหมด 4 ห้อง</li>
+                <li>ราคา 550 บาท/ชั่วโมง</li>
+              </ul>
+            </div>
+            {/* VIP Room */}
+            <div className="flex flex-col items-center">
+              <img
+                src="/images/vip-room.jpg"
+                alt="VIP Room"
+                className="rounded-2xl shadow-lg w-full mb-6 object-cover"
+                style={{ maxHeight: 220 }}
+              />
+              <h3 className="text-2xl font-bold text-[#2d184a] mb-4">VIP Room</h3>
+              <ul className="text-[#222] text-lg list-disc pl-5 mb-2">
+                <li>เหมาะสำหรับลูกค้ากลุ่มใหญ่ รองรับ 8-15 คน</li>
+                <li>จอขนาดใหญ่ Full + ระบบเสียง Hi-end</li>
+                <li>บริการพิเศษ : Private waiter / room service</li>
+                <li>เหมาะสำหรับงานเลี้ยง วันเกิด หรือปาร์ตี้สุด Exclusive</li>
+                <li>มีทั้งหมด 2 ห้อง</li>
+                <li>ราคา 1200 บาท/ชั่วโมง</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -88,4 +143,3 @@ export default function Home() {
     </main>
   );
 }
-
