@@ -67,7 +67,7 @@ export default function Navbar() {
   }, [session, status, role]);
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 max-h-20 py-4 bg-linear-to-r from-[#7B7BCB] to-[#2B0A3D]">
+    <nav className="fixed inset-x-0 top-0 z-50 max-h-20 py-4 backdrop-blur-md bg-linear-to-r from-[#7B7BCB] to-[#2B0A3D]/90 shadow-[#7B7BCB]/50 shadow-md">
       <div className="max-w-screen-2xl flex justify-between items-center mx-auto px-8">
         <Link
           href="/#landing"
@@ -88,7 +88,10 @@ export default function Navbar() {
                 <li key={i}>
                   <Link
                     href={it.href}
-                    className="text-white text-base font-medium hover:opacity-80 transition"
+                    className="text-white text-base font-medium hover:opacity-80 transition relative inline-block pb-1
+                    after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 
+                    after:bg-[#7b7bbd] after:transition-all after:duration-300 
+                    hover:after:w-full"
                   >
                     {it.label}
                     {it.icon}
@@ -104,7 +107,7 @@ export default function Navbar() {
                   <button
                     key={i}
                     onClick={it.action}
-                    className="bg-white text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-gray-100 transition"
+                    className="bg-white hover:cursor-pointer hover:outline-2 outline-0 outline-offset-2 outline-red-500 text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-gray-100 transition"
                   >
                     {it.label}
                   </button>
@@ -112,7 +115,7 @@ export default function Navbar() {
                   <Link
                     key={i}
                     href={it.href}
-                    className="bg-white text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-gray-100 transition"
+                    className="bg-white text-[#2B0A3D] font-semibold rounded px-5 py-2 shadow hover:bg-[#6768AB] hover:text-white transition"
                   >
                     {it.label}
                   </Link>
