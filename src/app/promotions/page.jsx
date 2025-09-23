@@ -26,13 +26,12 @@ export default async function PromotionsPage() {
               className="rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-br from-[#6C63FF] to-[#3F326F] text-white"
             >
               <div className="text-lg font-bold mb-2">{p.name} !</div>
-              <div className="text-sm mb-4">
+              <div className="text-sm mb-4 flex items-center gap-2 flex-wrap">
                 {p.description
                   ? p.description
                   : p.discountType === "PERCENT"
                   ? `Get ${p.discountValue}% off`
                   : `Get ${p.discountValue} THB off`}
-                <br />
                 <span className="opacity-80">with code :</span>
               </div>
               <button
