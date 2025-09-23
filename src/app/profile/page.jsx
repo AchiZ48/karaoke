@@ -94,8 +94,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f8fa] py-16">
-      <div className="mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative" style={{ boxShadow: "4px 8px 16px #e0e0e0" }}>
+    <main className="min-h-screen flex items-center justify-center bg-[#f8f8fa]">
+      <div className="w-full mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative " style={{ boxShadow: "4px 8px 16px #e0e0e0" }}>
         {/* Profile Header */}
         <div className="flex items-center gap-6 mb-8">
           <div className="w-20 h-20 rounded-full bg-gray-300 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
