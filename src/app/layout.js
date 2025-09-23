@@ -1,5 +1,5 @@
 import { AuthProvider } from "./Providers";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -7,7 +7,7 @@ import { ToastProvider } from "./components/toast/ToastProvider";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import PageFrame from "./components/PageFrame";
 
-const geistSans = Geist({
+const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
