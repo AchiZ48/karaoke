@@ -38,7 +38,13 @@ export const authOptions = {
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 10 * 60,
+  },
+  jwt: {
+    maxAge: 10 * 60,
+  },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
@@ -65,3 +71,4 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
+
