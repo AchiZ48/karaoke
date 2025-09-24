@@ -254,7 +254,9 @@ export default function BookingPage() {
     <main className="min-h-screen flex items-center justify-center bg-white py-16">
       <div className="flex justify-center items-center w-full py-10 px-2">
         <div className="w-full max-w-xl rounded-3xl shadow-2xl bg-gradient-to-b from-[#7b7bbd]  to-[#2A2A45] p-8 border border-white/10 relative">
-          <h1 className="text-2xl font-semibold text-white text-center mb-6">Book a Room</h1>
+          <h1 className="text-2xl font-semibold text-white text-center mb-6">
+            Book a Room
+          </h1>
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Room */}
             <div>
@@ -293,20 +295,26 @@ export default function BookingPage() {
             </div>
             {/* Time Slot */}
             <div>
-              <label className="block mb-2 text-white font-medium">Time Slot</label>
+              <label className="block mb-2 text-white font-medium">
+                Time Slot
+              </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {timeSlots.map((t) => (
                   <button
                     key={t}
                     type="button"
                     className={`rounded-xl px-2 py-2 text-sm font-semibold transition
-                      ${form.timeSlot === t
-                        ? "bg-white text-[#6B3FA0] shadow"
-                        : availableSlots.includes(t)
-                          ? "bg-white/20 text-white hover:bg-white/40"
-                          : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      ${
+                        form.timeSlot === t
+                          ? "bg-white text-[#6B3FA0] shadow"
+                          : availableSlots.includes(t)
+                            ? "bg-white/20 text-white hover:bg-white/40"
+                            : "bg-gray-400 text-gray-200 cursor-not-allowed"
                       }`}
-                    onClick={() => availableSlots.includes(t) && setForm({ ...form, timeSlot: t })}
+                    onClick={() =>
+                      availableSlots.includes(t) &&
+                      setForm({ ...form, timeSlot: t })
+                    }
                     disabled={!availableSlots.includes(t) || locked}
                   >
                     {t}
@@ -316,7 +324,9 @@ export default function BookingPage() {
             </div>
             {/* Number of People */}
             <div>
-              <label className="block mb-2 text-white font-medium">Number of People</label>
+              <label className="block mb-2 text-white font-medium">
+                Number of People
+              </label>
               <input
                 type="number"
                 min={1}
@@ -335,13 +345,16 @@ export default function BookingPage() {
               />
               {selectedRoom && (
                 <p className="text-sm text-white opacity-80 mt-1">
-                  Capacity: {selectedRoom.capacity} – Price: {selectedRoom.price} THB
+                  Capacity: {selectedRoom.capacity} – Price:{" "}
+                  {selectedRoom.price} THB
                 </p>
               )}
             </div>
             {/* Promotion */}
             <div>
-              <label className="block mb-2 text-white font-medium">Promotion</label>
+              <label className="block mb-2 text-white font-medium">
+                Promotion
+              </label>
               <select
                 className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                 value={form.promotionCode}
@@ -360,7 +373,9 @@ export default function BookingPage() {
             </div>
             {/* Payment Method */}
             <div>
-              <label className="block mb-2 text-white font-medium">Payment Method</label>
+              <label className="block mb-2 text-white font-medium">
+                Payment Method
+              </label>
               <select
                 className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
                 value={form.paymentMethod}
@@ -384,7 +399,7 @@ export default function BookingPage() {
               <button
                 type="button"
                 className="bg-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition"
-                onClick={() => window.location.href = "/"}
+                onClick={() => (window.location.href = "/")}
                 disabled={locked}
               >
                 Cancel
@@ -399,7 +414,9 @@ export default function BookingPage() {
             </div>
             {/* Error/Success */}
             {error && <div className="text-red-300 text-center">{error}</div>}
-            {success && <div className="text-green-200 text-center">{success}</div>}
+            {success && (
+              <div className="text-green-200 text-center">{success}</div>
+            )}
             {!session && (
               <div className="mt-2 text-sm text-white">
                 {authRequiredMsg}{" "}

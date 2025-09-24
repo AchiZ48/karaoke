@@ -10,5 +10,5 @@ export default function PageFrame({ children }) {
   const noOffsetRoutes = new Set(["/"]); // add more like '/welcome' if desired
   const needOffset = !noOffsetRoutes.has(pathname || "/");
 
-  return <div >{children}</div>;
+  return <div>{children}</div>;
 }

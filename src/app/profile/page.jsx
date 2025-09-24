@@ -95,18 +95,29 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f8f8fa]">
-      <div className="w-full mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative " style={{ boxShadow: "4px 8px 16px #e0e0e0" }}>
+      <div
+        className="w-full mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative "
+        style={{ boxShadow: "4px 8px 16px #e0e0e0" }}
+      >
         {/* Profile Header */}
         <div className="flex items-center gap-6 mb-8">
           <div className="w-20 h-20 rounded-full bg-gray-300 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
             {/* Profile image placeholder */}
-            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" className="text-gray-400">
-              <circle cx="12" cy="8" r="4" fill="#e0e0e0"/>
-              <rect x="4" y="16" width="16" height="6" rx="3" fill="#e0e0e0"/>
+            <svg
+              width="48"
+              height="48"
+              fill="none"
+              viewBox="0 0 24 24"
+              className="text-gray-400"
+            >
+              <circle cx="12" cy="8" r="4" fill="#e0e0e0" />
+              <rect x="4" y="16" width="16" height="6" rx="3" fill="#e0e0e0" />
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-black">{form.name || "-"}</div>
+            <div className="text-2xl font-bold text-black">
+              {form.name || "-"}
+            </div>
             <div className="text-base text-gray-600">{form.email || "-"}</div>
           </div>
         </div>
@@ -128,7 +139,9 @@ export default function ProfilePage() {
           <div className="flex items-center px-6 py-5">
             <div className="w-1/3 font-semibold text-black">Password</div>
             <div className="flex-1 flex flex-col items-end">
-              <span className="tracking-widest text-lg text-gray-600">**********</span>
+              <span className="tracking-widest text-lg text-gray-600">
+                **********
+              </span>
               <button
                 className="text-xs text-[#5b5b8c] underline mt-1"
                 onClick={() => setShowPwdModal(true)}
@@ -152,7 +165,9 @@ export default function ProfilePage() {
         ) : (
           <form onSubmit={saveProfile} className="mt-8 space-y-4">
             <div>
-              <label className="block mb-1 font-semibold text-black">Name</label>
+              <label className="block mb-1 font-semibold text-black">
+                Name
+              </label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.name ?? ""}
@@ -161,7 +176,9 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-black">Email</label>
+              <label className="block mb-1 font-semibold text-black">
+                Email
+              </label>
               <input
                 className="w-full border rounded p-2 bg-gray-100 text-black"
                 value={form.email ?? ""}
@@ -169,7 +186,9 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold text-black">Phone</label>
+              <label className="block mb-1 font-semibold text-black">
+                Phone
+              </label>
               <input
                 className="w-full border rounded p-2 bg-white text-black"
                 value={form.phone ?? ""}

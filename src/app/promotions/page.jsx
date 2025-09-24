@@ -30,8 +30,8 @@ export default async function PromotionsPage() {
                 {p.description
                   ? p.description
                   : p.discountType === "PERCENT"
-                  ? `Get ${p.discountValue}% off`
-                  : `Get ${p.discountValue} THB off`}
+                    ? `Get ${p.discountValue}% off`
+                    : `Get ${p.discountValue} THB off`}
                 <span className="opacity-80">with code :</span>
               </div>
               <button
@@ -42,7 +42,8 @@ export default async function PromotionsPage() {
                 {p.code}
               </button>
               <div className="text-xs opacity-80 mt-4">
-                Valid: {new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}
+                Valid: {new Date(p.startDate).toLocaleDateString()} -{" "}
+                {new Date(p.endDate).toLocaleDateString()}
               </div>
             </div>
           ))}

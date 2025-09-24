@@ -8,7 +8,6 @@ export default function Home() {
     <main className="bg-white min-h-screen flex flex-col">
       {/* Header */}
 
-
       {/* Landing Section */}
       <section className="flex flex-col items-center justify-center py-16 min-h-screen">
         <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
@@ -26,9 +25,13 @@ export default function Home() {
           </button>
         )}
         {/* Promotion Box */}
-        <div className="w-[90%] max-w-4xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
-          style={{ boxShadow: "4px 4px 12px 0 rgba(45,24,74,0.12)" }}>
-          <h2 className="text-2xl font-bold mb-2">Special Promotion This Month !</h2>
+        <div
+          className="w-[90%] max-w-4xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
+          style={{ boxShadow: "4px 4px 12px 0 rgba(45,24,74,0.12)" }}
+        >
+          <h2 className="text-2xl font-bold mb-2">
+            Special Promotion This Month !
+          </h2>
           <p className="mb-4">Get 20% off on all VIP rooms with code :</p>
           <span className="bg-white text-[#2d184a] px-8 py-2 rounded-lg font-bold text-lg shadow">
             SING2025
@@ -39,7 +42,9 @@ export default function Home() {
       {/* Rooms Section */}
       <section id="rooms" className="w-full pt-16 pb-24 border-t min-h-screen">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-[#2d184a] mb-2 mt-4">Our room</h2>
+          <h2 className="text-5xl font-bold text-[#2d184a] mb-2 mt-4">
+            Our room
+          </h2>
           <div className="h-[2px] w-full bg-[#e5e5f7] my-6"></div>
           {/* Room Cards */}
           <div className="flex flex-col gap-30">
@@ -51,7 +56,9 @@ export default function Home() {
                 className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
               />
               <div className="flex-1 flex flex-col justify-center">
-                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">Standard Room</h3>
+                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
+                  Standard Room
+                </h3>
                 <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มเล็ก รองรับ 1-4 คน</li>
                   <li>ระบบเสียงมาตรฐาน คมชัด</li>
@@ -69,7 +76,9 @@ export default function Home() {
                 className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover mr-20"
               />
               <div className="flex-1 flex flex-col justify-center pl-20">
-                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">Premium Room</h3>
+                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
+                  Premium Room
+                </h3>
                 <ul className="text-[#222] text-lg list-disc pl-0 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มขนาดกลาง รองรับ 4-8 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียงรอบทิศทาง</li>
@@ -87,7 +96,9 @@ export default function Home() {
                 className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
               />
               <div className="flex-1 flex flex-col justify-center ">
-                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">VIP Room</h3>
+                <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
+                  VIP Room
+                </h3>
                 <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
                   <li>เหมาะสำหรับลูกค้ากลุ่มใหญ่ รองรับ 8-15 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียง Hi-end</li>

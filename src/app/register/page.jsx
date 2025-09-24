@@ -103,10 +103,7 @@ function Register() {
             Join Borntosing today !
           </p>
           <hr className="w-full mb-6 border-gray-300" />
-          <form
-            onSubmit={handleSubmit}
-            className="w-full flex flex-col gap-4"
-          >
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
             <div>
               <label className="block text-md font-semibold mb-1 text-white">
                 Full Name
@@ -245,7 +242,9 @@ function Register() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-gray-400 group hover:text-indigo-300"
                   tabIndex={-1}
                   onClick={() => setShowConfirmPassword((v) => !v)}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showConfirmPassword ? (
                     <svg

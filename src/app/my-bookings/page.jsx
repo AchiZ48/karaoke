@@ -29,7 +29,9 @@ export default async function MyBookingsPage() {
       <div className="container mx-auto p-4 max-w-5xl mt-5">
         {/* Welcome Box */}
         <div className="rounded-2xl mb-8 p-8 bg-gradient-to-r from-[#6768AB] to-[#210535] shadow-lg text-white py-17">
-          <h2 className="text-2xl font-semibold mb-2">Welcome back, {session.user.name}</h2>
+          <h2 className="text-2xl font-semibold mb-2">
+            Welcome back, {session.user.name}
+          </h2>
           <div className="opacity-80">Manage you bookings and account</div>
         </div>
 
@@ -52,7 +54,9 @@ export default async function MyBookingsPage() {
         {/* Bookings Table */}
         <div className="overflow-x-auto">
           <div className="rounded-2xl bg-gradient-to-r from-[#6768AB] to-[#210535] shadow-lg text-white">
-            <div className="px-6 pt-6 pb-2 text-lg font-semibold">My Bookings</div>
+            <div className="px-6 pt-6 pb-2 text-lg font-semibold">
+              My Bookings
+            </div>
             <table className="w-full text-sm rounded-2xl">
               <thead className="bg-white/10 text-white">
                 <tr>
@@ -66,10 +70,7 @@ export default async function MyBookingsPage() {
               </thead>
               <tbody>
                 {list.map((b) => (
-                  <tr
-                    key={b._id}
-                    className="border-t border-white/10"
-                  >
+                  <tr key={b._id} className="border-t border-white/10">
                     <td className="px-4 py-3 font-medium">{b.bookingId}</td>
                     <td className="px-4 py-3">
                       {b.room?.name || b.room?.number}
@@ -90,7 +91,10 @@ export default async function MyBookingsPage() {
                 ))}
                 {list.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center opacity-70">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-6 text-center opacity-70"
+                    >
                       No bookings yet.
                     </td>
                   </tr>

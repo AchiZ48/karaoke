@@ -44,7 +44,10 @@ export async function POST(req) {
       Date.now() - new Date(booking.createdAt).getTime() > 15 * 60 * 1000
     ) {
       return NextResponse.json(
-        { message: "Booking payment window expired. Please create a new booking." },
+        {
+          message:
+            "Booking payment window expired. Please create a new booking.",
+        },
         { status: 400 },
       );
     }
