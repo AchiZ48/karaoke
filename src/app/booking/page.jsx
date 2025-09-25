@@ -512,7 +512,7 @@ export default function BookingPage() {
               </p>
             )}
             {/* Buttons */}
-            <div className="flex justify-between gap-4 pt-2 justify-center">
+            <div className="flex gap-4 pt-2 justify-center">
               {waitingPayment && (
                 <>
                   <button
