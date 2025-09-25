@@ -29,10 +29,7 @@ export default function Navbar() {
         { href: "/promotions", label: "Promotions" },
         { href: "/booking", label: "Booking" },
         { href: "/my-bookings", label: "My Booking" },
-        {
-          href: "/profile",
-          icon: <img src="/profile.svg" alt="" width={20} />,
-        },
+        
         {
           action: () => signOut(),
           label: "Log out",
@@ -50,7 +47,7 @@ export default function Navbar() {
         { href: "/admin", label: "Admin Panel" },
         {
           href: "/profile",
-          icon: <img src="/profile.svg" alt="" width={20} />,
+          icon: <img src="/profile.svg" alt="" width={20} height={20}/>,
         },
         {
           action: () => signOut(),
@@ -103,6 +100,11 @@ export default function Navbar() {
                   </li>
                 ))}
             </ul>
+            {session ? (
+              <Link href="/profile">
+                <img src="/profile.svg" alt="" width={20} height={20}/>
+              </Link>         
+            ):("")} 
             <div className="flex gap-4">
               {items
                 .filter((it) => it.button)
