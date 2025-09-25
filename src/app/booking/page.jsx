@@ -13,6 +13,7 @@ const timeSlots = [
 
 export default function BookingPage() {
   const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
   const { showToast } = useToast();
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
@@ -38,6 +39,9 @@ export default function BookingPage() {
     numberOfPeople: 1,
     paymentMethod: "PROMPTPAY",
     promotionCode: "",
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
   });
 
   const selectedRoom = useMemo(
@@ -73,6 +77,15 @@ export default function BookingPage() {
       setAuthRequiredMsg("");
     }
   }, [session]);
+
+  useEffect(() => {
+    if (!session || isAdmin) return;
+    setForm((prev) => ({
+      ...prev,
+      customerName: prev.customerName || session.user?.name || "",
+      customerEmail: prev.customerEmail || session.user?.email || "",
+    }));
+  }, [session, isAdmin]);
 
   useEffect(() => {
     async function loadPromos() {
@@ -133,16 +146,55 @@ export default function BookingPage() {
     return base;
   }, [rooms, form.roomNumber, form.promotionCode, promotions]);
 
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  const successRedirect = isAdmin ? "/admin" : "/my-bookings";
+  const successRedirectLabel = isAdmin ? "Admin Dashboard" : "My Bookings";
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
     setQrData(null);
+
+    const payload = {
+      roomNumber: form.roomNumber,
+      date: form.date,
+      timeSlot: form.timeSlot,
+      numberOfPeople: Number(form.numberOfPeople) || 0,
+      paymentMethod: form.paymentMethod,
+    };
+
+    const promoCode = form.promotionCode ? form.promotionCode.trim() : "";
+    if (promoCode) {
+      payload.promotionCode = promoCode;
+    }
+
+    if (isAdmin) {
+      const walkInName = form.customerName.trim();
+      const walkInEmail = form.customerEmail.trim();
+      const walkInPhone = form.customerPhone.trim();
+      if (!walkInName || !walkInEmail || !walkInPhone) {
+        const msg = "Customer name, email, and phone are required.";
+        setError(msg);
+        showToast(msg, "error");
+        return;
+      }
+      if (!emailRegex.test(walkInEmail)) {
+        const msg = "Customer email looks invalid.";
+        setError(msg);
+        showToast(msg, "error");
+        return;
+      }
+      payload.customerName = walkInName;
+      payload.customerEmail = walkInEmail.toLowerCase();
+      payload.customerPhone = walkInPhone;
+    }
+
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -151,8 +203,10 @@ export default function BookingPage() {
       const booking = data.booking;
       setCurrentBookingId(booking.bookingId);
       if (form.paymentMethod === "CASH") {
-        setSuccess(`Booking created: ${booking.bookingId}`);
-        window.location.href = "/my-bookings";
+        setSuccess(
+          `Booking created: ${booking.bookingId}. Redirecting to ${successRedirectLabel}...`,
+        );
+        window.location.href = successRedirect;
         return;
       }
       if (form.paymentMethod === "PROMPTPAY") {
@@ -162,8 +216,9 @@ export default function BookingPage() {
           body: JSON.stringify({ bookingId: booking.bookingId }),
         });
         const payData = await payRes.json();
-        if (!payRes.ok)
+        if (!payRes.ok) {
           throw new Error(payData?.message || "Payment init failed");
+        }
 
         setClientSecret(payData.clientSecret || "");
         setLocked(true);
@@ -188,7 +243,11 @@ export default function BookingPage() {
           );
           showToast("PromptPay initiated");
         }
-        startPollingStatus(booking.bookingId);
+        startPollingStatus(
+          booking.bookingId,
+          successRedirect,
+          successRedirectLabel,
+        );
         return;
       }
     } catch (err) {
@@ -197,7 +256,7 @@ export default function BookingPage() {
     }
   }
 
-  function startPollingStatus(bookingId) {
+  function startPollingStatus(bookingId, redirectPath, redirectLabel) {
     let tries = 0;
     const maxTries = 180;
     const iv = setInterval(async () => {
@@ -210,10 +269,10 @@ export default function BookingPage() {
           if (["PAID", "CONFIRMED", "COMPLETED"].includes(status)) {
             clearInterval(iv);
             setWaitingPayment(false);
-            setSuccess("Payment received. Redirecting to My Bookings...");
+            setSuccess(`Payment received. Redirecting to ${redirectLabel}...`);
             showToast("Payment received", "success");
             setTimeout(() => {
-              window.location.href = "/my-bookings";
+              window.location.href = redirectPath;
             }, 1200);
           }
         }
@@ -262,10 +321,7 @@ export default function BookingPage() {
             <div>
               <label className="block mb-2 text-white font-medium">Room</label>
               {loadingRooms ? (
-                <select
-                  className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium animate-pulse">
-
-                </select>
+                <select className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium animate-pulse"></select>
               ) : (
                 <select
                   className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
@@ -277,7 +333,7 @@ export default function BookingPage() {
                 >
                   {rooms.map((r) => (
                     <option key={r.number} value={r.number}>
-                      {r.name} ({r.type}) — {r.capacity} ppl — {r.price} THB
+                      {r.name} ({r.type}) - {r.capacity} ppl - {r.price} THB
                     </option>
                   ))}
                 </select>
@@ -325,6 +381,64 @@ export default function BookingPage() {
                 ))}
               </div>
             </div>
+            {isAdmin && (
+              <div className="rounded-2xl border border-white/20 bg-white/10 p-4 space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/80">
+                  Walk-in customer details
+                </p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block mb-2 text-white font-medium">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                      value={form.customerName}
+                      onChange={(e) =>
+                        setForm({ ...form, customerName: e.target.value })
+                      }
+                      disabled={locked}
+                      required
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-white font-medium">
+                      Customer Email
+                    </label>
+                    <input
+                      type="email"
+                      className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                      value={form.customerEmail}
+                      onChange={(e) =>
+                        setForm({ ...form, customerEmail: e.target.value })
+                      }
+                      disabled={locked}
+                      required
+                      placeholder="customer@example.com"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block mb-2 text-white font-medium">
+                      Customer Phone
+                    </label>
+                    <input
+                      type="tel"
+                      className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
+                      value={form.customerPhone}
+                      onChange={(e) =>
+                        setForm({ ...form, customerPhone: e.target.value })
+                      }
+                      disabled={locked}
+                      required
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Number of People */}
             <div>
               <label className="block mb-2 text-white font-medium">
@@ -348,7 +462,7 @@ export default function BookingPage() {
               />
               {selectedRoom && (
                 <p className="text-sm text-white opacity-80 mt-1">
-                  Capacity: {selectedRoom.capacity} – Price:{" "}
+                  Capacity: {selectedRoom.capacity} - Price:{" "}
                   {selectedRoom.price} THB
                 </p>
               )}
@@ -398,15 +512,38 @@ export default function BookingPage() {
               </p>
             )}
             {/* Buttons */}
-            <div className="flex justify-between gap-4 pt-2">
-              <button
-                type="button"
-                className="bg-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition"
-                onClick={() => (window.location.href = "/")}
-                disabled={locked}
-              >
-                Cancel
-              </button>
+            <div className="flex justify-between gap-4 pt-2 justify-center">
+              {waitingPayment && (
+                <>
+                  <button
+                    type="button"
+                    className="bg-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition"
+                    onClick={() => {
+                      if (!currentBookingId) return;
+                      fetch(`/api/bookings/${currentBookingId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "cancel" }),
+                      }).then(() => {
+                        setWaitingPayment(false);
+                        setLocked(false);
+                        setSuccess("Booking cancelled");
+                      });
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-[#97EF7C] text-black px-6 py-3 rounded-xl font-semibold shadow hover:bg-[#5a338c] transition"
+                    onClick={() => setShowPromptPay(true)}
+                    disabled={remainingSec === 0}
+                  >
+                    Show PromptPay QR
+                  </button>
+                </>
+              )}
+
               <button
                 type="submit"
                 className="bg-[#6768AB] text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-[#5a338c] transition"

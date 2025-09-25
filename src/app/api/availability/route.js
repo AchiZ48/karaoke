@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../../lib/mongodb";
 import Booking from "../../../../models/booking";
+import {
+  bookingExpiryWindowMs,
+  expireStaleBookings,
+} from "../../../../lib/bookingCleanup";
 
 const ALL_SLOTS = [
   "12:00-14:00",
@@ -29,7 +33,9 @@ export async function GET(req) {
     day.setHours(0, 0, 0, 0);
 
     await connectMongoDB();
-    const cutoff = new Date(Date.now() - 15 * 60 * 1000); // 15 minutes
+    await expireStaleBookings();
+
+    const cutoff = new Date(Date.now() - bookingExpiryWindowMs);
     const nextDay = new Date(day);
     nextDay.setDate(nextDay.getDate() + 1);
     const bookings = await Booking.find({

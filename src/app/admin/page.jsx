@@ -6,6 +6,7 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import Booking from "../../../models/booking";
 import Room from "../../../models/room";
 import Promotion from "../../../models/promotion";
+import { expireStaleBookings } from "../../../lib/bookingCleanup";
 import AdminDashboardClient from "../components/admin/AdminDashboardClient";
 
 export default async function AdminPage() {
@@ -14,6 +15,7 @@ export default async function AdminPage() {
   if (session.user?.role !== "admin") redirect("/");
 
   await connectMongoDB();
+  await expireStaleBookings();
 
   // ----- Stats -----
   const [totalBookings, availableRooms] = await Promise.all([

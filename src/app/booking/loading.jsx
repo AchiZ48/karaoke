@@ -10,28 +10,19 @@ export default function Loading() {
             {/* Room */}
             <div>
               <label className="block mb-2 text-white font-medium">Room</label>
-                <div
-                  className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium">
-                </div>
-
-
+              <div className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"></div>
             </div>
             {/* Date */}
             <div>
               <label className="block mb-2 text-white font-medium">Date</label>
-              <div
-                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium animate-pulse"
-                
-              />
+              <div className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium animate-pulse" />
             </div>
             {/* Time Slot */}
             <div>
               <label className="block mb-2 text-white font-medium">
                 Time Slot
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-
-              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
             </div>
             {/* Number of People */}
             <div>
@@ -41,22 +32,16 @@ export default function Loading() {
               <input
                 type="number"
                 className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
-                
                 placeholder="Enter number of people"
               />
-
             </div>
             {/* Promotion */}
             <div>
               <label className="block mb-2 text-white font-medium">
                 Promotion
               </label>
-              <select
-                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
-                
-              >
+              <select className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium">
                 <option value="">No promotion</option>
-                
               </select>
             </div>
             {/* Payment Method */}
@@ -64,10 +49,7 @@ export default function Loading() {
               <label className="block mb-2 text-white font-medium">
                 Payment Method
               </label>
-              <select
-                className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
-                
-              >
+              <select className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium">
                 <option value="PROMPTPAY">PromptPay</option>
                 <option value="CASH">Cash</option>
               </select>

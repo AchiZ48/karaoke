@@ -40,7 +40,7 @@ function Login() {
         return;
       }
       showToast("Login successful", "success");
-      router.replace("welcome");
+      router.replace("/");
     } catch (error) {
       console.log(error);
     }

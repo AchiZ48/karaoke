@@ -4,6 +4,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../../lib/mongodb";
 import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
+import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
 
 export async function GET(_req, context) {
   try {
@@ -14,20 +15,10 @@ export async function GET(_req, context) {
         { status: 400 },
       );
     await connectMongoDB();
+    await expireStaleBookings();
     const doc = await Booking.findOne({ bookingId });
     if (!doc)
       return NextResponse.json({ message: "Not found" }, { status: 404 });
-    // Auto-cancel expired unpaid bookings (non-CASH) after 15 minutes
-    const cutoffMs = 15 * 60 * 1000;
-    const expired =
-      doc.status === "PENDING" &&
-      doc.paymentMethod !== "CASH" &&
-      doc.createdAt &&
-      Date.now() - new Date(doc.createdAt).getTime() > cutoffMs;
-    if (expired) {
-      doc.status = "CANCELLED";
-      await doc.save();
-    }
     const booking = doc.toObject();
     return NextResponse.json({ booking });
   } catch (err) {
@@ -57,6 +48,7 @@ export async function PATCH(req, context) {
     const newTimeSlot = body?.timeSlot; // HH:MM-HH:MM
 
     await connectMongoDB();
+    await expireStaleBookings();
     const booking = await Booking.findOne({ bookingId });
     if (!booking)
       return NextResponse.json({ message: "Not found" }, { status: 404 });

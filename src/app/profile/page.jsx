@@ -151,7 +151,9 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex items-center px-6 py-5">
-              <div className="w-1/3 font-semibold text-black">Email account</div>
+              <div className="w-1/3 font-semibold text-black">
+                Email account
+              </div>
               <div className="flex-1 text-gray-600">
                 {editing ? (
                   <input
@@ -171,7 +173,9 @@ export default function ProfilePage() {
                   <input
                     className="w-full border rounded p-2 bg-white text-black"
                     value={form.phone ?? ""}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value })
+                    }
                     required
                   />
                 ) : (
@@ -251,67 +255,71 @@ export default function ProfilePage() {
             <div className="relative w-full max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-3xl font-bold text-center text-white mb-2">
-            Chnage password
-          </h1>
+                  Chnage password
+                </h1>
+                <hr className="w-full mb-6 border-gray-300" />
               </div>
-              <form onSubmit={changePassword} className="w-full flex flex-col gap-4">
+              <form
+                onSubmit={changePassword}
+                className="w-full flex flex-col gap-4"
+              >
                 <div>
                   <label className="block text-md font-semibold mb-1 text-white">
                     Current password
-                  </label>  
-                <input
-                  type="password"
-                  placeholder="Current password"
-                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={pwd.currentPassword}
-                  onChange={(e) =>
-                    setPwd({ ...pwd, currentPassword: e.target.value })
-                  }
-                  required
-                />
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Current password"
+                    className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={pwd.currentPassword}
+                    onChange={(e) =>
+                      setPwd({ ...pwd, currentPassword: e.target.value })
+                    }
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-md font-semibold mb-1 text-white">
-                New password
-              </label>
-                <input
-                  type="password"
-                  placeholder="New password"
-                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={pwd.newPassword}
-                  onChange={(e) =>
-                    setPwd({ ...pwd, newPassword: e.target.value })
-                  }
-                  required
-                />
-                <div className="mt-2 flex gap-2">
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1 flex-1 rounded-full ${
-                      passwordStrength > i ? "bg-green-400" : "bg-gray-300"
-                    }`}
-                  ></div>
-                ))}
-              </div>
-              <span className="text-xs text-white opacity-70 mt-1">
-                password strength
-              </span>
+                    New password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={pwd.newPassword}
+                    onChange={(e) =>
+                      setPwd({ ...pwd, newPassword: e.target.value })
+                    }
+                    required
+                  />
+                  <div className="mt-2 flex gap-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full ${
+                          passwordStrength > i ? "bg-green-400" : "bg-gray-300"
+                        }`}
+                      ></div>
+                    ))}
+                  </div>
+                  <span className="text-xs text-white opacity-70 mt-1">
+                    password strength
+                  </span>
                 </div>
                 <div>
                   <label className="block text-md font-semibold mb-1 text-white">
-                Confirm new password
-              </label>
-                <input
-                  type="password"
-                  placeholder="Confirm new password"
-                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={pwd.confirmNewPassword}
-                  onChange={(e) =>
-                    setPwd({ ...pwd, confirmNewPassword: e.target.value })
-                  }
-                  required
-                />
+                    Confirm new password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Confirm new password"
+                    className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={pwd.confirmNewPassword}
+                    onChange={(e) =>
+                      setPwd({ ...pwd, confirmNewPassword: e.target.value })
+                    }
+                    required
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <button

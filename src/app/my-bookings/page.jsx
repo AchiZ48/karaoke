@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../lib/mongodb";
 import Booking from "../../../models/booking";
+import { expireStaleBookings } from "../../../lib/bookingCleanup";
 import ActionsCell from "./ActionsCell";
 
 export default async function MyBookingsPage() {
@@ -10,6 +11,7 @@ export default async function MyBookingsPage() {
   if (!session) redirect("/login?callbackUrl=/my-bookings");
 
   await connectMongoDB();
+  await expireStaleBookings();
   const userId = session.user.id;
   const email = session.user.email;
   const list = await Booking.find({
@@ -25,7 +27,7 @@ export default async function MyBookingsPage() {
   ).length;
 
   return (
-    <main className="min-h-screen bg-white py-16">
+    <main className="min-h-screen bg-white py-16 dark:bg-grey">
       <div className="container mx-auto p-4 max-w-5xl mt-5">
         {/* Welcome Box */}
         <div className="rounded-2xl mb-8 p-8 bg-gradient-to-r from-[#6768AB] to-[#210535] shadow-lg text-white py-17">

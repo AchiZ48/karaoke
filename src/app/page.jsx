@@ -15,14 +15,14 @@ export default function Home() {
         </h1>
         {!session ? (
           <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
-          Login to reserve your perfect room today
-        </p>
+            Login to reserve your perfect room today
+          </p>
         ) : (
           <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
-        Booking to reserve your perfect room today
-        </p>
+            Booking to reserve your perfect room today
+          </p>
         )}
-        
+
         {!session ? (
           <button
             className="px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
@@ -30,14 +30,13 @@ export default function Home() {
           >
             Login
           </button>
-        ):(
+        ) : (
           <a
             href="/booking"
             className="px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
           >
             Booking
           </a>
-          
         )}
         {/* Promotion Box */}
         <div

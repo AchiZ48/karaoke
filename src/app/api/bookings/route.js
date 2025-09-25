@@ -5,9 +5,16 @@ import { connectMongoDB } from "../../../../lib/mongodb";
 import Booking from "../../../../models/booking";
 import Room from "../../../../models/room";
 import User from "../../../../models/user";
+import { expireStaleBookings } from "../../../../lib/bookingCleanup";
+
+const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 
 function isValidTimeSlot(str) {
   return /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/.test(str);
+}
+
+function normalizeEmail(str) {
+  return typeof str === "string" ? str.trim().toLowerCase() : "";
 }
 
 function generateBookingId() {
@@ -31,9 +38,11 @@ export async function POST(req) {
       date, // ISO string or yyyy-mm-dd
       timeSlot, // HH:MM-HH:MM
       numberOfPeople,
-      // ignore client-provided name/email/phone; take from session
-      paymentMethod, // CASH | PROMPTPAY
+      paymentMethod, // CASH | PROMPTPAY | STRIPE
       promotionCode,
+      customerName,
+      customerEmail,
+      customerPhone,
     } = body || {};
 
     if (
@@ -48,12 +57,35 @@ export async function POST(req) {
         { status: 400 },
       );
     }
-    if (!session.user?.email) {
+
+    const isAdmin = session.user?.role === "admin";
+
+    const adminName =
+      typeof customerName === "string" ? customerName.trim() : "";
+    const adminEmail = normalizeEmail(customerEmail);
+    const adminPhone =
+      typeof customerPhone === "string" ? customerPhone.trim() : "";
+
+    if (isAdmin) {
+      if (!adminName || !adminEmail || !adminPhone) {
+        return NextResponse.json(
+          { message: "Name, email, and phone are required for admin bookings" },
+          { status: 400 },
+        );
+      }
+      if (!EMAIL_REGEX.test(adminEmail)) {
+        return NextResponse.json(
+          { message: "Invalid customer email format" },
+          { status: 400 },
+        );
+      }
+    } else if (!session.user?.email) {
       return NextResponse.json(
         { message: "Account email is required" },
         { status: 400 },
       );
     }
+
     if (!isValidTimeSlot(timeSlot)) {
       return NextResponse.json(
         { message: "Invalid timeSlot format (HH:MM-HH:MM)" },
@@ -62,6 +94,7 @@ export async function POST(req) {
     }
 
     await connectMongoDB();
+    await expireStaleBookings();
 
     const room = await Room.findOne({
       number: String(roomNumber).toUpperCase(),
@@ -146,28 +179,45 @@ export async function POST(req) {
       }
     }
 
-    const safeEmail = session.user?.email || "";
-    const safeName =
-      session.user?.name || (safeEmail ? safeEmail.split("@")[0] : "User");
-    // Pull phone from user profile
-    const userDoc = await User.findOne({ email: safeEmail }).lean();
-    const profilePhone = userDoc?.phone;
-    if (!profilePhone) {
-      return NextResponse.json(
-        {
-          message:
-            "Phone number not found on profile. Please add it in your profile.",
-        },
-        { status: 400 },
-      );
+    const sessionEmail = normalizeEmail(session.user?.email);
+    let bookingEmail = sessionEmail;
+    let bookingName =
+      session.user?.name ||
+      (bookingEmail ? bookingEmail.split("@")[0] : "User");
+    let bookingPhone = "";
+
+    if (isAdmin) {
+      bookingEmail = adminEmail;
+      bookingName = adminName;
+      bookingPhone = adminPhone;
+    } else {
+      if (!bookingEmail) {
+        return NextResponse.json(
+          { message: "Account email is required" },
+          { status: 400 },
+        );
+      }
+      const userDoc = await User.findOne({ email: bookingEmail }).lean();
+      const profilePhone = userDoc?.phone;
+      if (!profilePhone) {
+        return NextResponse.json(
+          {
+            message:
+              "Phone number not found on profile. Please add it in your profile.",
+          },
+          { status: 400 },
+        );
+      }
+      bookingPhone = profilePhone;
     }
 
     const bookingDoc = {
-      userId: session.user?.id
-        ? typeof session.user.id === "string"
-          ? session.user.id
-          : undefined
-        : undefined,
+      userId:
+        !isAdmin && session.user?.id
+          ? typeof session.user.id === "string"
+            ? session.user.id
+            : undefined
+          : undefined,
       bookingId: generateBookingId(),
       room: {
         name: room.name,
@@ -175,9 +225,9 @@ export async function POST(req) {
         type: room.type,
         price: room.price,
       },
-      customerName: safeName,
-      customerEmail: safeEmail,
-      customerPhone: profilePhone,
+      customerName: bookingName,
+      customerEmail: bookingEmail,
+      customerPhone: bookingPhone,
       date: reqDate,
       timeSlot,
       numberOfPeople: Number(numberOfPeople),

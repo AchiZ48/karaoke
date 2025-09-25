@@ -20,7 +20,7 @@ function Register() {
   const { data: session } = useSession();
   const { showToast } = useToast();
   if (session) {
-    redirect("/welcome");
+    redirect("/");
   }
 
   // Password strength logic

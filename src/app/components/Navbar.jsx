@@ -29,7 +29,7 @@ export default function Navbar() {
         { href: "/promotions", label: "Promotions" },
         { href: "/booking", label: "Booking" },
         { href: "/my-bookings", label: "My Booking" },
-        
+
         {
           action: () => signOut(),
           label: "Log out",
@@ -99,9 +99,11 @@ export default function Navbar() {
             </ul>
             {session ? (
               <Link href="/profile">
-                <img src="/profile.svg" alt="" width={20} height={20}/>
-              </Link>         
-            ):("")} 
+                <img src="/profile.svg" alt="" width={20} height={20} />
+              </Link>
+            ) : (
+              ""
+            )}
             <div className="flex gap-4">
               {items
                 .filter((it) => it.button)
