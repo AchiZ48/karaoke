@@ -45,10 +45,7 @@ export default function Navbar() {
         { href: "/promotions", label: "Promotions" },
         { href: "/booking", label: "Booking" },
         { href: "/admin", label: "Admin Panel" },
-        {
-          href: "/profile",
-          icon: <img src="/profile.svg" alt="" width={20} height={20}/>,
-        },
+        ,
         {
           action: () => signOut(),
           label: "Log out",
