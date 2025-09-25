@@ -18,6 +18,16 @@ export default function ProfilePage() {
   const { showToast } = useToast();
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const getStrength = (password = "") => {
+    let score = 0;
+    const value = password ?? "";
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    return score;
+  };
+  const passwordStrength = getStrength(pwd.newPassword);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -123,99 +133,101 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Details */}
-        <div className="divide-y divide-gray-300 bg-white rounded-xl overflow-hidden">
-          <div className="flex items-center px-6 py-5">
-            <div className="w-1/3 font-semibold text-black">Name</div>
-            <div className="flex-1 text-gray-600">{form.name || "-"}</div>
-          </div>
-          <div className="flex items-center px-6 py-5">
-            <div className="w-1/3 font-semibold text-black">Email account</div>
-            <div className="flex-1 text-gray-600">{form.email || "-"}</div>
-          </div>
-          <div className="flex items-center px-6 py-5">
-            <div className="w-1/3 font-semibold text-black">Phone number</div>
-            <div className="flex-1 text-gray-600">{form.phone || "-"}</div>
-          </div>
-          <div className="flex items-center px-6 py-5">
-            <div className="w-1/3 font-semibold text-black">Password</div>
-            <div className="flex-1 flex flex-col items-end">
-              <span className="tracking-widest text-lg text-gray-600">
-                **********
-              </span>
-              <button
-                className="text-xs text-[#5b5b8c] underline mt-1"
-                onClick={() => setShowPwdModal(true)}
-              >
-                Change password ?
-              </button>
+        <form onSubmit={saveProfile}>
+          <div className="divide-y divide-gray-300 bg-white rounded-xl overflow-hidden">
+            <div className="flex items-center px-6 py-5">
+              <div className="w-1/3 font-semibold text-black">Name</div>
+              <div className="flex-1 text-gray-600">
+                {editing ? (
+                  <input
+                    className="w-full border rounded p-2 bg-white text-black"
+                    value={form.name ?? ""}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                  />
+                ) : (
+                  form.name || "-"
+                )}
+              </div>
+            </div>
+            <div className="flex items-center px-6 py-5">
+              <div className="w-1/3 font-semibold text-black">Email account</div>
+              <div className="flex-1 text-gray-600">
+                {editing ? (
+                  <input
+                    className="w-full border rounded p-2 bg-gray-100 text-black"
+                    value={form.email ?? ""}
+                    readOnly
+                  />
+                ) : (
+                  form.email || "-"
+                )}
+              </div>
+            </div>
+            <div className="flex items-center px-6 py-5">
+              <div className="w-1/3 font-semibold text-black">Phone number</div>
+              <div className="flex-1 text-gray-600">
+                {editing ? (
+                  <input
+                    className="w-full border rounded p-2 bg-white text-black"
+                    value={form.phone ?? ""}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    required
+                  />
+                ) : (
+                  form.phone || "-"
+                )}
+              </div>
+            </div>
+            <div className="flex items-center px-6 py-5">
+              <div className="w-1/3 font-semibold text-black">Password</div>
+              <div className="flex-1 flex flex-col items-end">
+                <span className="tracking-widest text-lg text-gray-600">
+                  **********
+                </span>
+                <button
+                  type="button"
+                  className="text-xs text-[#5b5b8c] underline mt-1"
+                  onClick={() => setShowPwdModal(true)}
+                >
+                  Change password ?
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Edit/Save/Cancel Button */}
-        {!editing ? (
+          {/* Edit/Save/Cancel Button */}
           <div className="flex justify-end mt-8">
-            <button
-              className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
-              onClick={() => setEditing(true)}
-            >
-              Edit
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={saveProfile} className="mt-8 space-y-4">
-            <div>
-              <label className="block mb-1 font-semibold text-black">
-                Name
-              </label>
-              <input
-                className="w-full border rounded p-2 bg-white text-black"
-                value={form.name ?? ""}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold text-black">
-                Email
-              </label>
-              <input
-                className="w-full border rounded p-2 bg-gray-100 text-black"
-                value={form.email ?? ""}
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold text-black">
-                Phone
-              </label>
-              <input
-                className="w-full border rounded p-2 bg-white text-black"
-                value={form.phone ?? ""}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                required
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
-                type="submit"
-              >
-                Save
-              </button>
+            {!editing ? (
               <button
                 type="button"
-                className="px-8 py-2 rounded-lg border font-semibold text-black"
-                onClick={() => {
-                  setForm(original);
-                  setEditing(false);
-                }}
+                className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
+                onClick={() => setEditing(true)}
               >
-                Cancel
+                Edit
               </button>
-            </div>
-          </form>
-        )}
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  className="bg-gradient-to-r from-[#6d6dc9] to-[#2e2e5e] text-white px-8 py-2 rounded-lg font-semibold shadow"
+                  type="submit"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="px-8 py-2 rounded-lg border font-semibold text-black"
+                  onClick={() => {
+                    setForm(original);
+                    setEditing(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </form>
 
         {/* Close Button */}
         {!editing && (
@@ -236,47 +248,71 @@ export default function ProfilePage() {
               className="absolute inset-0 bg-black/50"
               onClick={() => setShowPwdModal(false)}
             />
-            <div className="relative bg-white text-black rounded-lg p-6 w-full max-w-md shadow-xl">
+            <div className="relative w-full max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
               <div className="flex items-center justify-between mb-2">
-                <div className="font-semibold">Change Password</div>
-                <button
-                  className="text-sm underline"
-                  onClick={() => setShowPwdModal(false)}
-                >
-                  Close
-                </button>
+                <h1 className="text-3xl font-bold text-center text-white mb-2">
+            Chnage password
+          </h1>
               </div>
-              <form onSubmit={changePassword} className="space-y-3">
+              <form onSubmit={changePassword} className="w-full flex flex-col gap-4">
+                <div>
+                  <label className="block text-md font-semibold mb-1 text-white">
+                    Current password
+                  </label>  
                 <input
                   type="password"
                   placeholder="Current password"
-                  className="w-full border rounded p-2 bg-white text-black"
+                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={pwd.currentPassword}
                   onChange={(e) =>
                     setPwd({ ...pwd, currentPassword: e.target.value })
                   }
                   required
                 />
+                </div>
+                <div>
+                  <label className="block text-md font-semibold mb-1 text-white">
+                New password
+              </label>
                 <input
                   type="password"
                   placeholder="New password"
-                  className="w-full border rounded p-2 bg-white text-black"
+                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={pwd.newPassword}
                   onChange={(e) =>
                     setPwd({ ...pwd, newPassword: e.target.value })
                   }
                   required
                 />
+                <div className="mt-2 flex gap-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${
+                      passwordStrength > i ? "bg-green-400" : "bg-gray-300"
+                    }`}
+                  ></div>
+                ))}
+              </div>
+              <span className="text-xs text-white opacity-70 mt-1">
+                password strength
+              </span>
+                </div>
+                <div>
+                  <label className="block text-md font-semibold mb-1 text-white">
+                Confirm new password
+              </label>
                 <input
                   type="password"
                   placeholder="Confirm new password"
-                  className="w-full border rounded p-2 bg-white text-black"
+                  className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={pwd.confirmNewPassword}
                   onChange={(e) =>
                     setPwd({ ...pwd, confirmNewPassword: e.target.value })
                   }
                   required
                 />
+                </div>
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
