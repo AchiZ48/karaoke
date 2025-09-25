@@ -262,7 +262,10 @@ export default function BookingPage() {
             <div>
               <label className="block mb-2 text-white font-medium">Room</label>
               {loadingRooms ? (
-                <div className="opacity-70 text-white">Loading rooms…</div>
+                <select
+                  className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium animate-pulse">
+
+                </select>
               ) : (
                 <select
                   className="w-full rounded-xl px-4 py-3 bg-white/90 text-black font-medium"
