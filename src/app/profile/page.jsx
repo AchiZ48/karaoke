@@ -129,7 +129,7 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f8f8fa]">
       <div
-        className="w-full mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative "
+        className="mt-20 w-full mx-auto max-w-xl rounded-2xl shadow-lg bg-[#f3f3f5] p-8 relative "
         style={{ boxShadow: "4px 8px 16px #e0e0e0" }}
       >
         {/* Profile Header */}

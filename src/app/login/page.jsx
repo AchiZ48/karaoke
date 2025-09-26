@@ -75,7 +75,7 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="w-full max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
+      <div className="w-[90%] max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
         <h1 className="text-3xl font-bold text-center text-indigo-900 dark:text-white mb-2">
           Welcome Back !
         </h1>
@@ -184,7 +184,7 @@ function Login() {
               type="button"
               onClick={handleForgot}
               disabled={sending}
-              className="text-indigo-600 hover:underline text-sm disabled:opacity-50"
+              className="text-white hover:underline text-sm disabled:opacity-50"
             >
               {sending ? "Sending…" : "Forgot password?"}
             </button>
