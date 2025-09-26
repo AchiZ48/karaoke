@@ -33,6 +33,15 @@ function Register() {
     return score;
   };
 
+  const getStrengthLabel = () => {
+    const score = getStrength();
+    if (score <= 1) return "weak";
+    if (score === 2) return "good";
+    if (score === 3) return "strong";
+    if (score === 4) return "very strong";
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmpassword) {
@@ -221,7 +230,7 @@ function Register() {
                 ))}
               </div>
               <span className="text-xs text-white opacity-70 mt-1">
-                password strength
+                password strength ({getStrengthLabel()})
               </span>
             </div>
             <div className="relative flex flex-col">
