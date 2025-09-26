@@ -143,9 +143,9 @@ export default function ProfilePage() {
         {/* Profile Details */}
         <form onSubmit={saveProfile}>
           <div className="divide-y divide-gray-300 bg-white rounded-xl overflow-hidden">
-            <div className="flex items-center px-6 py-5">
+            <div className="flex items-center px-6 py-5 justify-between">
               <div className="w-1/3 font-semibold text-black">Name</div>
-              <div className="flex-1 text-gray-600">
+              <div className="flex text-gray-600">
                 {editing ? (
                   <input
                     className="w-full border rounded p-2 bg-white text-black"
@@ -158,11 +158,11 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            <div className="flex items-center px-6 py-5">
+            <div className="flex items-center px-6 py-5 justify-between">
               <div className="w-1/3 font-semibold text-black">
                 Email account
               </div>
-              <div className="flex-1 text-gray-600">
+              <div className="flex text-gray-600">
                 {editing ? (
                   <input
                     className="w-full border rounded p-2 bg-gray-100 text-black"
@@ -174,9 +174,9 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            <div className="flex items-center px-6 py-5">
+            <div className="flex items-center px-6 py-5 justify-between">
               <div className="w-1/3 font-semibold text-black">Phone number</div>
-              <div className="flex-1 text-gray-600">
+              <div className="flex text-gray-600">
                 {editing ? (
                   <input
                     className="w-full border rounded p-2 bg-white text-black"
