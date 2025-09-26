@@ -97,9 +97,10 @@ export async function POST(req) {
     await connectMongoDB();
     await expireStaleBookings();
 
+    const activeStatusMatch = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
     const room = await Room.findOne({
       number: String(roomNumber).toUpperCase(),
-      status: { $in: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"] },
+      status: { $in: activeStatusMatch },
     }).lean();
     if (!room) {
       return NextResponse.json({ message: "Room not found" }, { status: 404 });

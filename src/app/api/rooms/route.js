@@ -4,6 +4,16 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../lib/mongodb";
 import Room from "../../../../models/room";
 
+const ACTIVE_STATUS_MATCH = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
+
+const normalizeRoomStatus = (value) => {
+  if (value === "INACTIVE") return "INACTIVE";
+  if (value === "ACTIVE") return "ACTIVE";
+  if (value === "MAINTENANCE") return "INACTIVE";
+  if (value === "AVAILABLE" || value === "OCCUPIED") return "ACTIVE";
+  return "ACTIVE";
+};
+
 export async function GET(req) {
   try {
     await connectMongoDB();
@@ -12,12 +22,16 @@ export async function GET(req) {
     const type = searchParams.get("type");
     const minCapacity = Number(searchParams.get("minCapacity")) || undefined;
 
-    const query = { status: "AVAILABLE" };
+    const query = { status: { $in: ACTIVE_STATUS_MATCH } };
     if (type) query.type = type;
     if (minCapacity) query.capacity = { $gte: minCapacity };
 
     const rooms = await Room.find(query).sort({ price: 1 }).lean();
-    return NextResponse.json({ rooms });
+    const normalizedRooms = rooms.map((room) => ({
+      ...room,
+      status: normalizeRoomStatus(room?.status),
+    }));
+    return NextResponse.json({ rooms: normalizedRooms });
   } catch (err) {
     console.error("GET /api/rooms error:", err);
     return NextResponse.json(
@@ -35,6 +49,7 @@ export async function POST(req) {
     await connectMongoDB();
     const body = await req.json();
     const { name, number, type, capacity, price, status } = body || {};
+    const normalizedStatus = normalizeRoomStatus(status);
     if (!name || !number || !type || !capacity || !price)
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
     const created = await Room.create({
@@ -43,7 +58,7 @@ export async function POST(req) {
       type,
       capacity,
       price,
-      status: status || "AVAILABLE",
+      status: normalizedStatus,
     });
     return NextResponse.json({ room: created }, { status: 201 });
   } catch (err) {
@@ -65,6 +80,9 @@ export async function PATCH(req) {
     const { id, ...updates } = body || {};
     if (!id)
       return NextResponse.json({ message: "id required" }, { status: 400 });
+    if (typeof updates.status === "string") {
+      updates.status = normalizeRoomStatus(updates.status);
+    }
     await Room.updateOne({ _id: id }, { $set: updates });
     return NextResponse.json({ message: "Updated" });
   } catch (err) {
