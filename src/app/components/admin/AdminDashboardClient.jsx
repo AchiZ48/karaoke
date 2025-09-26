@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
+import { TIME_SLOTS, getCurrentTimeSlot } from "../../../../lib/timeSlots";
 // Navbar is provided by layout
 import { useToast } from "../toast/ToastProvider";
 
@@ -50,13 +51,10 @@ export default function AdminDashboardClient({
   const [bookingDraft, setBookingDraft] = useState(null); // { bookingId, date, timeSlot }
   const [availableSlots, setAvailableSlots] = useState([]);
   const [occupiedSlots, setOccupiedSlots] = useState([]);
-  const timeSlots = [
-    "12:00-14:00",
-    "14:00-16:00",
-    "16:00-18:00",
-    "18:00-20:00",
-    "20:00-22:00",
-  ];
+  const timeSlots = TIME_SLOTS;
+  const [currentSlot, setCurrentSlot] = useState(() =>
+    getCurrentTimeSlot(new Date(), timeSlots),
+  );
 
   const loadDashboard = useCallback(
     async ({ scale = trendScale, updateAll = false } = {}) => {
@@ -82,6 +80,25 @@ export default function AdminDashboardClient({
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const initialTrendScaleLoad = useRef(true);
+  const liveSlotRef = useRef(currentSlot);
+
+  useEffect(() => {
+    function updateSlot() {
+      setCurrentSlot(getCurrentTimeSlot(new Date(), timeSlots));
+    }
+    updateSlot();
+    const timer = setInterval(updateSlot, 60000);
+    return () => clearInterval(timer);
+  }, [timeSlots]);
+
+  useEffect(() => {
+    if (liveSlotRef.current === currentSlot) {
+      return;
+    }
+    liveSlotRef.current = currentSlot;
+    loadDashboard({ updateAll: true }).catch(() => {});
+  }, [currentSlot, loadDashboard]);
+
 
   // เตรียม labels/data จาก trend
   const { labels, values } = useMemo(() => {
@@ -197,7 +214,8 @@ export default function AdminDashboardClient({
           r.type?.toLowerCase().includes(q),
       );
     }
-    if (roomStatus) list = list.filter((r) => r.status === roomStatus);
+    if (roomStatus)
+      list = list.filter((r) => (r.liveStatus ?? r.status) === roomStatus);
     return list;
   }, [rooms, roomSearch, roomStatus]);
 
@@ -245,6 +263,63 @@ export default function AdminDashboardClient({
     loadAvail();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showBookingModal, bookingDraft?.date]);
+
+  async function handleRoomSlotEdit(room) {
+    if (!room?.activeBookingId || (room.liveStatus ?? room.status) !== "OCCUPIED") {
+      showNotification("No booking in the current time slot", "info");
+      return;
+    }
+
+    const targetId = room.activeBookingId;
+    let bookingRecord = (bookings || []).find((b) => b.bookingId === targetId);
+
+    if (!bookingRecord) {
+      try {
+        const res = await fetch(`/api/bookings/${targetId}`);
+        const data = await res.json();
+        if (res.ok && data?.booking) {
+          bookingRecord = data.booking;
+          setBookings((prev) => {
+            const exists = prev.some((b) => b.bookingId === data.booking.bookingId);
+            if (exists) {
+              return prev.map((b) =>
+                b.bookingId === data.booking.bookingId ? data.booking : b,
+              );
+            }
+            return [data.booking, ...prev];
+          });
+        }
+      } catch {}
+    }
+
+    if (!bookingRecord) {
+      const fallback = {
+        bookingId: targetId,
+        room,
+        timeSlot: room.activeBookingTimeSlot,
+        date: room.activeBookingDate,
+      };
+      bookingRecord = fallback;
+      setBookings((prev) => {
+        if (prev.some((b) => b.bookingId === targetId)) return prev;
+        return [fallback, ...prev];
+      });
+    }
+
+    const bookingDate = bookingRecord?.date
+      ? new Date(bookingRecord.date).toISOString().slice(0, 10)
+      : room.activeBookingDate
+      ? new Date(room.activeBookingDate).toISOString().slice(0, 10)
+      : "";
+
+    setBookingDraft({
+      bookingId: targetId,
+      date: bookingDate,
+      timeSlot:
+        bookingRecord?.timeSlot ?? room.activeBookingTimeSlot ?? "",
+    });
+    setShowBookingModal(true);
+  }
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white py-20">
@@ -339,10 +414,10 @@ export default function AdminDashboardClient({
                     <select
                       value={trendScale}
                       onChange={(e) => setTrendScale(e.target.value)}
-                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className="rounded-lg border border-white/20 bg-neutral-800 text-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     >
-                      <option value="month">Monthly (last 6 months)</option>
-                      <option value="day">Daily (last 30 days)</option>
+                      <option value="month" className="bg-neutral-800 text-white">Monthly (last 6 months)</option>
+                      <option value="day" className="bg-neutral-800 text-white">Daily (last 30 days)</option>
                     </select>
                   </div>
                 </div>
@@ -385,9 +460,9 @@ export default function AdminDashboardClient({
                 <select
                   value={bookingStatus}
                   onChange={(e) => setBookingStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded border border-white/10 bg-neutral-800 text-white"
                 >
-                  <option value="">All Status</option>
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
                   {[
                     "PENDING",
                     "CONFIRMED",
@@ -395,7 +470,7 @@ export default function AdminDashboardClient({
                     "COMPLETED",
                     "CANCELLED",
                   ].map((s) => (
-                    <option key={s} value={s}>
+                    <option key={s} value={s} className="bg-neutral-800 text-white">
                       {s}
                     </option>
                   ))}
@@ -486,10 +561,10 @@ export default function AdminDashboardClient({
                 />
                 <select
                   name="type"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded border border-white/10 bg-neutral-800 text-white"
                 >
                   {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                    <option key={t} value={t}>
+                    <option key={t} value={t} className="bg-neutral-800 text-white">
                       {t}
                     </option>
                   ))}
@@ -512,10 +587,10 @@ export default function AdminDashboardClient({
                 />
                 <select
                   name="status"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded  border border-white/10 bg-neutral-800 text-white"
                 >
                   {["AVAILABLE", "OCCUPIED", "MAINTENANCE"].map((s) => (
-                    <option key={s} value={s}>
+                    <option key={s} value={s} className="bg-neutral-800 text-white">
                       {s}
                     </option>
                   ))}
@@ -550,12 +625,12 @@ export default function AdminDashboardClient({
                 <select
                   value={roomStatus}
                   onChange={(e) => setRoomStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded border border-white/10 bg-neutral-800 text-white"
                 >
-                  <option value="">All Status</option>
-                  <option value="AVAILABLE">AVAILABLE</option>
-                  <option value="OCCUPIED">OCCUPIED</option>
-                  <option value="MAINTENANCE">MAINTENANCE</option>
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  <option value="AVAILABLE" className="bg-neutral-800 text-white">AVAILABLE</option>
+                  <option value="OCCUPIED" className="bg-neutral-800 text-white">OCCUPIED</option>
+                  <option value="MAINTENANCE" className="bg-neutral-800 text-white">MAINTENANCE</option>
                 </select>
               </div>
               <AdminRoomsTable
@@ -569,21 +644,12 @@ export default function AdminDashboardClient({
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
-                    setRooms((prev) =>
-                      prev.map((r) =>
-                        String(r._id) === String(roomId)
-                          ? { ...r, status: newStatus }
-                          : r,
-                      ),
-                    );
+                    await loadDashboard({ updateAll: true });
                   } catch (e) {
                     showNotification(e.message);
                   }
                 }}
-                onEdit={(room) => {
-                  setRoomDraft({ ...room });
-                  setShowRoomModal(true);
-                }}
+                onEdit={handleRoomSlotEdit}
                 onDelete={async (roomId) => {
                   if (!confirm("Delete room?")) return;
                   try {
@@ -592,9 +658,7 @@ export default function AdminDashboardClient({
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
-                    setRooms((prev) =>
-                      prev.filter((r) => String(r._id) !== String(roomId)),
-                    );
+                    await loadDashboard({ updateAll: true });
                   } catch (e) {
                     showNotification(e.message);
                   }
@@ -669,10 +733,10 @@ export default function AdminDashboardClient({
                 />
                 <select
                   name="discountType"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded border border-white/10 bg-neutral-800 text-white"
                 >
                   {["PERCENT", "FIXED"].map((t) => (
-                    <option key={t} value={t}>
+                    <option key={t} value={t} className="bg-neutral-800 text-white">
                       {t}
                     </option>
                   ))}
@@ -715,11 +779,11 @@ export default function AdminDashboardClient({
                 <select
                   value={promoActive}
                   onChange={(e) => setPromoActive(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded border border-white/10 bg-neutral-800 text-white"
                 >
-                  <option value="">All</option>
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="" className="bg-neutral-800 text-white">All</option>
+                  <option value="1" className="bg-neutral-800 text-white">Active</option>
+                  <option value="0" className="bg-neutral-800 text-white">Inactive</option>
                 </select>
               </div>
               <AdminPromotionsManager
@@ -868,6 +932,7 @@ export default function AdminDashboardClient({
                 {timeSlots.map((t) => (
                   <option
                     key={t}
+                    className="bg-neutral-800 text-white"
                     value={t}
                     disabled={
                       availableSlots.length > 0 && !availableSlots.includes(t)
@@ -974,14 +1039,14 @@ export default function AdminDashboardClient({
               required
             />
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full border border-white/10 rounded px-2 py-1 bg-neutral-800 text-white"
               value={roomDraft.type}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, type: e.target.value }))
               }
             >
               {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                <option key={t} value={t}>
+                <option key={t} value={t} className="bg-neutral-800 text-white">
                   {t}
                 </option>
               ))}
@@ -1014,14 +1079,14 @@ export default function AdminDashboardClient({
               />
             </div>
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full border border-white/10 rounded px-2 py-1 bg-neutral-800 text-white"
               value={roomDraft.status}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, status: e.target.value }))
               }
             >
               {["AVAILABLE", "OCCUPIED", "MAINTENANCE"].map((s) => (
-                <option key={s} value={s}>
+                <option key={s} value={s} className="bg-neutral-800 text-white">
                   {s}
                 </option>
               ))}
@@ -1132,7 +1197,7 @@ export default function AdminDashboardClient({
                 }
               >
                 {["PERCENT", "FIXED"].map((t) => (
-                  <option key={t} value={t}>
+                  <option key={t} value={t} className="bg-neutral-800 text-white">
                     {t}
                   </option>
                 ))}
@@ -1305,7 +1370,7 @@ function AdminBookingsTable({
                 "Customer",
                 "Room",
                 "Date & Time",
-                "Status",
+                "Live Status",
                 "Payment",
                 "Amount",
                 "Actions",
@@ -1374,7 +1439,7 @@ function AdminBookingsTable({
                           "COMPLETED",
                           "CANCELLED",
                         ].map((s) => (
-                          <option key={s} value={s}>
+                          <option key={s} value={s} className="bg-neutral-800 text-white">
                             {s}
                           </option>
                         ))}
@@ -1392,7 +1457,7 @@ function AdminBookingsTable({
                       >
                         {["PENDING", "PAID", "COMPLETED", "CANCELLED"].map(
                           (s) => (
-                            <option key={s} value={s}>
+                            <option key={s} value={s} className="bg-neutral-800 text-white">
                               {s}
                             </option>
                           ),
@@ -1451,7 +1516,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                 "Type",
                 "Capacity",
                 "Price",
-                "Status",
+                "Live Status",
                 "Actions",
               ].map((h) => (
                 <th
@@ -1473,13 +1538,14 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                 <td className="px-4 py-2">
                   ฿{(r.price ?? 0).toLocaleString()}
                 </td>
-                <td className="px-4 py-2">{r.status}</td>
+                <td className="px-4 py-2">{r.liveStatus ?? r.status}{r.liveStatus === "OCCUPIED" && r.activeBookingTimeSlot ? ` (${r.activeBookingTimeSlot})` : ""}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
                     {onEdit && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => onEdit(r)}
+                        disabled={(r.liveStatus ?? r.status) !== "OCCUPIED"}
                       >
                         ✏️
                       </button>
@@ -1734,3 +1800,10 @@ function AdminReports({ trend = [], stats = {} }) {
   );
 }
 // ...existing code...
+
+
+
+
+
+
+
