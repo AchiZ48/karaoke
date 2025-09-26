@@ -6,10 +6,8 @@ import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
 import Promotion from "../../../../../models/promotion";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
-import { TIME_SLOTS, getCurrentTimeSlot } from "../../../../../lib/timeSlots";
 
 const TREND_STATUSES = ["CONFIRMED", "PAID", "COMPLETED"];
-const ACTIVE_ROOM_BOOKING_STATUSES = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
 
 function buildMonthTrend(raw, startDate, now) {
   const map = new Map();
@@ -47,10 +45,6 @@ function buildDayTrend(raw, startDate, now) {
   return result;
 }
 
-function normalizeRoomNumber(value) {
-  return value ? String(value).trim().toUpperCase() : "";
-}
-
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions);
@@ -64,7 +58,10 @@ export async function GET(request) {
     const requestedScale = (searchParams.get("scale") || "month").toLowerCase();
     const scale = requestedScale === "day" ? "day" : "month";
 
-    const totalBookings = await Booking.countDocuments({});
+    const [totalBookings, availableRooms] = await Promise.all([
+      Booking.countDocuments({}),
+      Room.countDocuments({ status: "AVAILABLE" }),
+    ]);
 
     const revAgg = await Booking.aggregate([
       { $match: { status: { $in: TREND_STATUSES } } },
@@ -138,56 +135,10 @@ export async function GET(request) {
       )
       .lean();
 
-    const currentSlot = getCurrentTimeSlot(now, TIME_SLOTS);
-    const startOfDay = new Date(now);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
-
-    const [roomsRaw, promotions, slotBookingsRaw] = await Promise.all([
+    const [rooms, promotions] = await Promise.all([
       Room.find({}).sort({ createdAt: -1 }).lean(),
       Promotion.find({}).sort({ createdAt: -1 }).lean(),
-      currentSlot
-        ? Booking.find({
-            date: { $gte: startOfDay, $lt: endOfDay },
-            timeSlot: currentSlot,
-            status: { $in: ACTIVE_ROOM_BOOKING_STATUSES },
-          })
-            .select(
-              "bookingId customerName customerPhone room date timeSlot status paymentMethod totalAmount createdAt",
-            )
-            .lean()
-        : Promise.resolve([]),
     ]);
-
-    const occupiedNumbers = new Map(
-      slotBookingsRaw.map((booking) => [
-        normalizeRoomNumber(booking?.room?.number),
-        booking,
-      ]),
-    );
-
-    const rooms = roomsRaw.map((room) => {
-      const normalizedNumber = normalizeRoomNumber(room?.number);
-      const activeBooking = normalizedNumber
-        ? occupiedNumbers.get(normalizedNumber)
-        : undefined;
-      const liveStatus =
-        room.status === "MAINTENANCE"
-          ? "MAINTENANCE"
-          : activeBooking
-          ? "OCCUPIED"
-          : "AVAILABLE";
-      return {
-        ...room,
-        liveStatus,
-        activeBookingId: activeBooking?.bookingId ?? null,
-        activeBookingTimeSlot: activeBooking?.timeSlot ?? null,
-        activeBookingDate: activeBooking?.date ?? null,
-      };
-    });
-
-    const availableRooms = rooms.filter((room) => room.liveStatus === "AVAILABLE").length;
 
     return NextResponse.json({
       stats: { totalBookings, totalRevenue, activeCustomers, availableRooms },
