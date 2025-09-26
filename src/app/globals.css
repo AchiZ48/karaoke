@@ -1,1 +1,10 @@
 @import "tailwindcss";
+@layer base {
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+}

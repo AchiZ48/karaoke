@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { connectMongoDB } from "../../../../../lib/mongodb";
 import Booking from "../../../../../models/booking";
+import {
+  bookingExpiryWindowMs,
+  expireStaleBookings,
+} from "../../../../../lib/bookingCleanup";
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret
@@ -25,6 +29,7 @@ export async function POST(req) {
       );
 
     await connectMongoDB();
+    await expireStaleBookings();
     const booking = await Booking.findOne({ bookingId }).lean();
     if (!booking)
       return NextResponse.json(
@@ -41,10 +46,13 @@ export async function POST(req) {
     if (
       booking.status === "PENDING" &&
       booking.createdAt &&
-      Date.now() - new Date(booking.createdAt).getTime() > 15 * 60 * 1000
+      Date.now() - new Date(booking.createdAt).getTime() > bookingExpiryWindowMs
     ) {
       return NextResponse.json(
-        { message: "Booking payment window expired. Please create a new booking." },
+        {
+          message:
+            "Booking payment window expired. Please create a new booking.",
+        },
         { status: 400 },
       );
     }

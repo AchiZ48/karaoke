@@ -12,7 +12,7 @@ const ToastContext = createContext({ showToast: () => {} });
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const showToast = useCallback((msg, type = "success", duration = 2500) => {
+  const showToast = useCallback((msg, type = "success", duration = 5000) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((prev) => [...prev, { id, msg, type }]);
     if (duration > 0) {
@@ -28,7 +28,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed bottom-4 right-4 z-50 space-y-2">
         {toasts.map((t) => (
           <div
             key={t.id}

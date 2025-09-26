@@ -1,7 +1,7 @@
 // components/admin/AdminDashboardClient.jsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 // Navbar is provided by layout
 import { useToast } from "../toast/ToastProvider";
@@ -27,6 +27,8 @@ export default function AdminDashboardClient({
   const [promotions, setPromotions] = useState(initialPromotions || []);
   const [stats, setStats] = useState(initialStats || {});
   const [trend, setTrend] = useState(initialTrend || []);
+  const [trendScale, setTrendScale] = useState("month");
+  const [trendLoading, setTrendLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
   const [roomDraft, setRoomDraft] = useState(null);
@@ -56,8 +58,30 @@ export default function AdminDashboardClient({
     "20:00-22:00",
   ];
 
+  const loadDashboard = useCallback(
+    async ({ scale = trendScale, updateAll = false } = {}) => {
+      const params = new URLSearchParams({ scale });
+      const res = await fetch(`/api/admin/dashboard?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to load dashboard");
+      }
+      if (updateAll) {
+        setStats(data.stats || {});
+        if (Array.isArray(data.recentBookings))
+          setBookings(data.recentBookings);
+        if (Array.isArray(data.rooms)) setRooms(data.rooms);
+        if (Array.isArray(data.promotions)) setPromotions(data.promotions);
+      }
+      setTrend(data.trend || []);
+      return data;
+    },
+    [trendScale],
+  );
+
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const initialTrendScaleLoad = useRef(true);
 
   // เตรียม labels/data จาก trend
   const { labels, values } = useMemo(() => {
@@ -66,6 +90,29 @@ export default function AdminDashboardClient({
       values: (trend || []).map((t) => t.value),
     };
   }, [trend]);
+
+  useEffect(() => {
+    if (initialTrendScaleLoad.current && trendScale === "month") {
+      initialTrendScaleLoad.current = false;
+      return;
+    }
+    initialTrendScaleLoad.current = false;
+    let ignore = false;
+    const run = async () => {
+      setTrendLoading(true);
+      try {
+        await loadDashboard({ scale: trendScale, updateAll: false });
+      } catch (e) {
+        if (!ignore) showToast(e.message, "error");
+      } finally {
+        if (!ignore) setTrendLoading(false);
+      }
+    };
+    run();
+    return () => {
+      ignore = true;
+    };
+  }, [trendScale, loadDashboard, showToast]);
 
   // ✅ แก้บั๊ก Chart re-init: สร้างครั้งเดียว แล้วอัปเดตข้อมูลแทน
   useEffect(() => {
@@ -200,7 +247,7 @@ export default function AdminDashboardClient({
   }, [showBookingModal, bookingDraft?.date]);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white">
+    <div className="min-h-screen bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white py-20">
       <div className="grid grid-cols-12 gap-0">
         {/* Sidebar */}
         <aside className="col-span-12 md:col-span-3 lg:col-span-2 border-r border-neutral-200 dark:border-white/10 p-4">
@@ -237,16 +284,10 @@ export default function AdminDashboardClient({
                   onClick={async () => {
                     try {
                       setRefreshing(true);
-                      const res = await fetch("/api/admin/dashboard");
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data?.message || "Failed");
-                      setStats(data.stats || {});
-                      setTrend(data.trend || []);
-                      if (Array.isArray(data.recentBookings))
-                        setBookings(data.recentBookings);
-                      if (Array.isArray(data.rooms)) setRooms(data.rooms);
-                      if (Array.isArray(data.promotions))
-                        setPromotions(data.promotions);
+                      await loadDashboard({
+                        scale: trendScale,
+                        updateAll: true,
+                      });
                       showToast("Dashboard refreshed");
                     } catch (e) {
                       showToast(e.message, "error");
@@ -257,7 +298,7 @@ export default function AdminDashboardClient({
                   disabled={refreshing}
                   className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 px-4 py-2"
                 >
-                  {refreshing ? "Refreshing…" : "Refresh"}
+                  {refreshing ? "Refreshing..." : "Refresh"}
                 </button>
               </div>
 
@@ -265,30 +306,26 @@ export default function AdminDashboardClient({
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
                 <StatCard
                   icon="📅"
-                  value={initialStats?.totalBookings ?? 0}
+                  value={stats?.totalBookings ?? 0}
                   label="Total Bookings"
-                  change="+12.5%"
                   changeType="positive"
                 />
                 <StatCard
                   icon="💰"
-                  value={`฿${(initialStats?.totalRevenue ?? 0).toLocaleString()}`}
+                  value={formatBaht(stats?.totalRevenue ?? 0)}
                   label="Total Revenue"
-                  change="+23.1%"
                   changeType="positive"
                 />
                 <StatCard
                   icon="👥"
-                  value={initialStats?.activeCustomers ?? 0}
-                  label="Active Customers"
-                  change="+18.7%"
+                  value={stats?.activeCustomers ?? 0}
+                  label="Total Customers"
                   changeType="positive"
                 />
                 <StatCard
                   icon="🚪"
-                  value={`${initialStats?.availableRooms ?? 0}/${rooms.length}`}
+                  value={`${stats?.availableRooms ?? 0}/${rooms.length}`}
                   label="Available Rooms"
-                  change="-2"
                   changeType="negative"
                 />
               </div>
@@ -297,6 +334,17 @@ export default function AdminDashboardClient({
               <div className="rounded-2xl border border-white/10 p-4 mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-base font-medium">Revenue Trend</div>
+                  <div className="flex items-center gap-2 text-xs text-white/70">
+                    {trendLoading && <span>Loading...</span>}
+                    <select
+                      value={trendScale}
+                      onChange={(e) => setTrendScale(e.target.value)}
+                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    >
+                      <option value="month">Monthly (last 6 months)</option>
+                      <option value="day">Daily (last 30 days)</option>
+                    </select>
+                  </div>
                 </div>
                 {/* container ต้องมีความสูงคงที่ ป้องกัน reflow */}
                 <div className="h-72">
@@ -1431,21 +1479,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                 <td className="px-4 py-2">{r.status}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    {onStatusChange && (
-                      <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
-                        onClick={() =>
-                          onStatusChange(
-                            r._id,
-                            r.status === "AVAILABLE"
-                              ? "MAINTENANCE"
-                              : "AVAILABLE",
-                          )
-                        }
-                      >
-                        🔄
-                      </button>
-                    )}
+                    
                     {onEdit && (
                       <button
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
@@ -1518,7 +1552,7 @@ function AdminPromotionsManager({
                     ? `${p.discountValue}%`
                     : `฿${(p.discountValue ?? 0).toLocaleString()}`}
                 </td>
-                <td className="px-4 py-2">{p.isActive ? "Yes" : "No"}</td>
+                <td className="px-4 py-2">{p.isActive ? "Active" : "Inactive"}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
                     {onToggleStatus && (
