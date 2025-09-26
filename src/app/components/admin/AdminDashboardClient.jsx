@@ -394,7 +394,6 @@ export default function AdminDashboardClient({
                     "PAID",
                     "COMPLETED",
                     "CANCELLED",
-                    "REFUNDED",
                   ].map((s) => (
                     <option key={s} value={s}>
                       {s}
@@ -1271,7 +1270,6 @@ function StatusBadge({ status }) {
     PAID: "bg-sky-500/15 text-sky-300",
     COMPLETED: "bg-violet-500/15 text-violet-300",
     CANCELLED: "bg-rose-500/15 text-rose-300",
-    REFUNDED: "bg-slate-500/15 text-slate-300",
   };
   return (
     <span
@@ -1375,7 +1373,6 @@ function AdminBookingsTable({
                           "PAID",
                           "COMPLETED",
                           "CANCELLED",
-                          "REFUNDED",
                         ].map((s) => (
                           <option key={s} value={s}>
                             {s}
