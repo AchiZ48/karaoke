@@ -36,7 +36,7 @@ export default function Home() {
               href="/booking"
               className="max-w-50 px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
             >
-              Bookings
+              Booking
             </button>
           )}
         </div>
