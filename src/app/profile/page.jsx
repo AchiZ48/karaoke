@@ -1,18 +1,13 @@
-  "use client";
-  // เพิ่มฟังก์ชันแปลงคะแนน password strength เป็นข้อความ
-  const getStrengthLabel = (score) => {
-    if (score <= 1) return "weak";
-    if (score === 2) return "good";
-    if (score === 3) return "strong";
-    if (score === 4) return "very strong";
-    return "";
-  };
+"use client";
+  // ...existing code...
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useToast } from "../components/toast/ToastProvider";
 
 export default function ProfilePage() {
+  // ...existing code...
+  // ...existing code...
   const { data: session, status } = useSession();
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [original, setOriginal] = useState({ name: "", email: "", phone: "" });
@@ -26,16 +21,6 @@ export default function ProfilePage() {
   const { showToast } = useToast();
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
-  const getStrength = (password = "") => {
-    let score = 0;
-    const value = password ?? "";
-    if (value.length >= 8) score++;
-    if (/[A-Z]/.test(value)) score++;
-    if (/[0-9]/.test(value)) score++;
-    if (/[^A-Za-z0-9]/.test(value)) score++;
-    return score;
-  };
-  const passwordStrength = getStrength(pwd.newPassword);
 
   const [showPwdFields, setShowPwdFields] = useState({
     current: false,
@@ -118,6 +103,28 @@ export default function ProfilePage() {
       setShowPwdModal(false);
     }
   }
+
+  // Password strength bar/label (แบบเดียวกับ register/reset-password)
+  const passwordStrengthLabels = [
+    "Too weak",
+    "Weak",
+    "Good",
+    "Strong",
+    "Very strong",
+  ];
+  const getStrength = (password = "") => {
+    let score = 0;
+    const value = password ?? "";
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    return score;
+  };
+  const passwordStrength = getStrength(pwd.newPassword);
+  const strengthLabel = pwd.newPassword
+    ? passwordStrengthLabels[passwordStrength] || passwordStrengthLabels[0]
+    : "Enter a password";
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f8f8fa]">
@@ -447,7 +454,7 @@ export default function ProfilePage() {
                     ))}
                   </div>
                   <span className="text-xs text-white opacity-70 mt-1">
-                    password strength ({getStrengthLabel(passwordStrength)})
+                    {strengthLabel}
                   </span>
                 </div>
                 <div>
