@@ -23,7 +23,14 @@ function Register() {
     redirect("/");
   }
 
-  // Password strength logic
+  // Password strength logic (แบบ reset-password)
+  const passwordStrengthLabels = [
+    "Too weak",
+    "Weak",
+    "Good",
+    "Strong",
+    "Very strong",
+  ];
   const getStrength = () => {
     let score = 0;
     if (password.length >= 8) score++;
@@ -32,15 +39,10 @@ function Register() {
     if (/[^A-Za-z0-9]/.test(password)) score++;
     return score;
   };
-
-  const getStrengthLabel = () => {
-    const score = getStrength();
-    if (score <= 1) return "weak";
-    if (score === 2) return "good";
-    if (score === 3) return "strong";
-    if (score === 4) return "very strong";
-    return "";
-  };
+  const passwordStrength = getStrength();
+  const strengthLabel = password
+    ? passwordStrengthLabels[passwordStrength] || passwordStrengthLabels[0]
+    : "Enter a password";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,19 +220,19 @@ function Register() {
                   )}
                 </button>
               </div>
-              {/* Password strength bar */}
+              {/* Password strength bar (แบบ reset-password) */}
               <div className="mt-2 flex gap-2">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
                     className={`h-1 flex-1 rounded-full ${
-                      getStrength() > i ? "bg-green-400" : "bg-gray-300"
+                      passwordStrength > i ? "bg-green-400" : "bg-gray-300"
                     }`}
                   ></div>
                 ))}
               </div>
               <span className="text-xs text-white opacity-70 mt-1">
-                password strength ({getStrengthLabel()})
+                {strengthLabel}
               </span>
             </div>
             <div className="relative flex flex-col">
