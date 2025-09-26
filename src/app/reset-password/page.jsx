@@ -3,7 +3,13 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import { useToast } from "../components/toast/ToastProvider";
 
-const passwordStrengthLabels = ["Too weak", "Weak", "Good", "Strong", "Very strong"];
+const passwordStrengthLabels = [
+  "Too weak",
+  "Weak",
+  "Good",
+  "Strong",
+  "Very strong",
+];
 
 function getStrength(value = "") {
   let score = 0;

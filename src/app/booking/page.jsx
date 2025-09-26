@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useToast } from "../components/toast/ToastProvider";
 
 const timeSlots = [
+  "10:00-12:00",
   "12:00-14:00",
   "14:00-16:00",
   "16:00-18:00",
@@ -527,7 +528,7 @@ export default function BookingPage() {
                       }).then(() => {
                         setWaitingPayment(false);
                         setLocked(false);
-                        setSuccess("Booking cancelled");
+                        setError("Booking cancelled");
                       });
                     }}
                   >

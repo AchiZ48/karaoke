@@ -308,28 +308,24 @@ export default function AdminDashboardClient({
                   icon="📅"
                   value={stats?.totalBookings ?? 0}
                   label="Total Bookings"
-                  change="+12.5%"
                   changeType="positive"
                 />
                 <StatCard
                   icon="💰"
                   value={formatBaht(stats?.totalRevenue ?? 0)}
                   label="Total Revenue"
-                  change="+23.1%"
                   changeType="positive"
                 />
                 <StatCard
                   icon="👥"
                   value={stats?.activeCustomers ?? 0}
-                  label="Active Customers"
-                  change="+18.7%"
+                  label="Total Customers"
                   changeType="positive"
                 />
                 <StatCard
                   icon="🚪"
                   value={`${stats?.availableRooms ?? 0}/${rooms.length}`}
                   label="Available Rooms"
-                  change="-2"
                   changeType="negative"
                 />
               </div>

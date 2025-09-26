@@ -6,6 +6,7 @@ import Booking from "../../../../models/booking";
 import Room from "../../../../models/room";
 import User from "../../../../models/user";
 import { expireStaleBookings } from "../../../../lib/bookingCleanup";
+import { sendBookingConfirmationEmail } from "../../../../lib/bookingEmails";
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 
@@ -238,6 +239,7 @@ export async function POST(req) {
     };
 
     const created = await Booking.create(bookingDoc);
+    await sendBookingConfirmationEmail(created);
     return NextResponse.json({ booking: created }, { status: 201 });
   } catch (err) {
     console.error("POST /api/bookings error:", err);

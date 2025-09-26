@@ -5,6 +5,7 @@ import { connectMongoDB } from "../../../../../lib/mongodb";
 import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
+import { sendBookingConfirmationEmail } from "../../../../../lib/bookingEmails";
 
 export async function GET(_req, context) {
   try {
@@ -56,6 +57,7 @@ export async function PATCH(req, context) {
     const isOwner =
       session.user?.email && booking.customerEmail === session.user.email;
     const isAdmin = session.user?.role === "admin";
+    const canReschedule = isAdmin || isOwner;
 
     if (action === "cancel") {
       if (!isOwner && !isAdmin)
@@ -79,8 +81,8 @@ export async function PATCH(req, context) {
       return NextResponse.json({ booking });
     }
 
-    // Admin reschedule/edit minimal: date + timeSlot
-    if (isAdmin && (newDate || newTimeSlot)) {
+    // Allow admins and booking owners to reschedule date/time
+    if (canReschedule && (newDate || newTimeSlot)) {
       if (!newDate || !newTimeSlot)
         return NextResponse.json(
           { message: "date and timeSlot are required" },
@@ -96,6 +98,13 @@ export async function PATCH(req, context) {
         );
       const reqDate = new Date(newDate);
       reqDate.setHours(0, 0, 0, 0);
+      const currentDate = new Date(booking.date);
+      currentDate.setHours(0, 0, 0, 0);
+      const sameDate = currentDate.getTime() === reqDate.getTime();
+      const sameSlot = booking.timeSlot === newTimeSlot;
+      if (sameDate && sameSlot) {
+        return NextResponse.json({ booking });
+      }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (reqDate < today)
@@ -136,6 +145,7 @@ export async function PATCH(req, context) {
       booking.date = reqDate;
       booking.timeSlot = newTimeSlot;
       await booking.save();
+      await sendBookingConfirmationEmail(booking, { isUpdate: true });
       return NextResponse.json({ booking });
     }
 

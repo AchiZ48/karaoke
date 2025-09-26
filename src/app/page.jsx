@@ -10,40 +10,42 @@ export default function Home() {
 
       {/* Landing Section */}
       <section className="flex flex-col items-center justify-center py-16 min-h-screen">
-        <h1 className="text-5xl md:text-6xl font-bold text-center mb-4 text-[#2d184a]">
-          Ready to <span className="text-[#7b7bbd]">Sing</span> ?
-        </h1>
-        {!session ? (
-          <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
-            Login to reserve your perfect room today
-          </p>
-        ) : (
-          <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
-            Booking to reserve your perfect room today
-          </p>
-        )}
+        <div className="flex flex-col items-center my-20">
+          <h1 className="text-5xl md:text-7xl font-bold text-center mb-4 text-[#2d184a]">
+            Ready to <span className="text-[#7b7bbd]">Sing</span> ?
+          </h1>
+          {!session ? (
+            <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
+              Login to reserve your perfect room today
+            </p>
+          ) : (
+            <p className="text-lg md:text-xl text-center mb-6 text-[#222]">
+              Booking to reserve your perfect room today
+            </p>
+          )}
 
-        {!session ? (
-          <button
-            className="px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
-            onClick={() => signIn()}
-          >
-            Login
-          </button>
-        ) : (
-          <a
-            href="/booking"
-            className="px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
-          >
-            Booking
-          </a>
-        )}
+          {!session ? (
+            <button
+              className="px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
+              onClick={() => signIn()}
+            >
+              Login
+            </button>
+          ) : (
+            <button
+              href="/booking"
+              className="max-w-50 px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
+            >
+              Booking
+            </button>
+          )}
+        </div>
         {/* Promotion Box */}
         <div
-          className="w-[90%] max-w-4xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
+          className="w-[100%] max-w-6xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
           style={{ boxShadow: "4px 4px 12px 0 rgba(45,24,74,0.12)" }}
         >
-          <h2 className="text-2xl font-bold mb-2">
+          <h2 className="text-4xl font-bold mb-2">
             Special Promotion This Month !
           </h2>
           <p className="mb-4">Get 20% off on all VIP rooms with code :</p>

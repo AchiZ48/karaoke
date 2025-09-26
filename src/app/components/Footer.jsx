@@ -7,6 +7,9 @@ export default function Footer() {
           <p className="flex items-center gap-2 font-semibold">
             <span>🎤</span> Borntosing
           </p>
+          <p className="flex items-center gap-2 font-semibold">
+            <span>📞</span> 062-543-7772
+          </p>
         </div>
         <div>
           <p className="font-bold mb-1">Location</p>
