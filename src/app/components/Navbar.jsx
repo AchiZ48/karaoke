@@ -76,7 +76,7 @@ export default function Navbar() {
               alt="BornToSing"
               className="h-8 sm:h-10 md:h-12 w-auto shrink-0"
             />
-            Borntosing
+            BornToSing
           </Link>
           <div className="flex gap-8 items-center [@container(max-width:900px)]:hidden">
             <ul className="flex gap-8 items-center">
