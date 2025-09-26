@@ -336,13 +336,14 @@ export default function AdminDashboardClient({
                   <div className="text-base font-medium">Revenue Trend</div>
                   <div className="flex items-center gap-2 text-xs text-white/70">
                     {trendLoading && <span>Loading...</span>}
+                    {/* Dashboard: Revenue Trend dropdown */}
                     <select
                       value={trendScale}
                       onChange={(e) => setTrendScale(e.target.value)}
-                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className="rounded-lg border border-white/20 bg-neutral-800 text-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     >
-                      <option value="month">Monthly (last 6 months)</option>
-                      <option value="day">Daily (last 30 days)</option>
+                      <option value="month" className="bg-neutral-800 text-white">Monthly (last 6 months)</option>
+                      <option value="day" className="bg-neutral-800 text-white">Daily (last 30 days)</option>
                     </select>
                   </div>
                 </div>
@@ -385,9 +386,9 @@ export default function AdminDashboardClient({
                 <select
                   value={bookingStatus}
                   onChange={(e) => setBookingStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-800 text-white border border-white/10"
                 >
-                  <option value="">All Status</option>
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
                   {[
                     "PENDING",
                     "CONFIRMED",
@@ -395,7 +396,7 @@ export default function AdminDashboardClient({
                     "COMPLETED",
                     "CANCELLED",
                   ].map((s) => (
-                    <option key={s} value={s}>
+                    <option key={s} value={s} className="bg-neutral-800 text-white">
                       {s}
                     </option>
                   ))}
@@ -550,12 +551,12 @@ export default function AdminDashboardClient({
                 <select
                   value={roomStatus}
                   onChange={(e) => setRoomStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-800 text-white border border-white/10"
                 >
-                  <option value="">All Status</option>
-                  <option value="AVAILABLE">AVAILABLE</option>
-                  <option value="OCCUPIED">OCCUPIED</option>
-                  <option value="MAINTENANCE">MAINTENANCE</option>
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  <option value="AVAILABLE" className="bg-neutral-800 text-white">AVAILABLE</option>
+                  <option value="OCCUPIED" className="bg-neutral-800 text-white">OCCUPIED</option>
+                  <option value="MAINTENANCE" className="bg-neutral-800 text-white">MAINTENANCE</option>
                 </select>
               </div>
               <AdminRoomsTable
@@ -715,11 +716,11 @@ export default function AdminDashboardClient({
                 <select
                   value={promoActive}
                   onChange={(e) => setPromoActive(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-800 text-white border border-white/10"
                 >
-                  <option value="">All</option>
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="" className="bg-neutral-800 text-white">All</option>
+                  <option value="1" className="bg-neutral-800 text-white">Active</option>
+                  <option value="0" className="bg-neutral-800 text-white">Inactive</option>
                 </select>
               </div>
               <AdminPromotionsManager
@@ -859,7 +860,7 @@ export default function AdminDashboardClient({
             <div>
               <label className="block mb-1">Time Slot</label>
               <select
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-800 text-white border border-white/10 rounded px-2 py-1"
                 value={bookingDraft.timeSlot}
                 onChange={(e) =>
                   setBookingDraft((d) => ({ ...d, timeSlot: e.target.value }))
@@ -872,6 +873,7 @@ export default function AdminDashboardClient({
                     disabled={
                       availableSlots.length > 0 && !availableSlots.includes(t)
                     }
+                    className="bg-neutral-800 text-white"
                   >
                     {t}
                     {occupiedSlots.includes(t) ? " (unavailable)" : ""}
@@ -974,14 +976,14 @@ export default function AdminDashboardClient({
               required
             />
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-800 text-white border border-white/10 rounded px-2 py-1"
               value={roomDraft.type}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, type: e.target.value }))
               }
             >
               {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                <option key={t} value={t}>
+                <option key={t} value={t} className="bg-neutral-800 text-white">
                   {t}
                 </option>
               ))}
@@ -1014,14 +1016,14 @@ export default function AdminDashboardClient({
               />
             </div>
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-800 text-white border border-white/10 rounded px-2 py-1"
               value={roomDraft.status}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, status: e.target.value }))
               }
             >
               {["AVAILABLE", "OCCUPIED", "MAINTENANCE"].map((s) => (
-                <option key={s} value={s}>
+                <option key={s} value={s} className="bg-neutral-800 text-white">
                   {s}
                 </option>
               ))}
@@ -1125,14 +1127,14 @@ export default function AdminDashboardClient({
             />
             <div className="grid grid-cols-2 gap-2">
               <select
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-800 text-white border border-white/10 rounded px-2 py-1"
                 value={promoDraft.discountType}
                 onChange={(e) =>
                   setPromoDraft((d) => ({ ...d, discountType: e.target.value }))
                 }
               >
                 {["PERCENT", "FIXED"].map((t) => (
-                  <option key={t} value={t}>
+                  <option key={t} value={t} className="bg-neutral-800 text-white">
                     {t}
                   </option>
                 ))}
@@ -1360,7 +1362,7 @@ function AdminBookingsTable({
                     </button>
                     {onStatusChange && (
                       <select
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-800 text-white hover:bg-neutral-700"
                         value={b.status}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
@@ -1374,7 +1376,7 @@ function AdminBookingsTable({
                           "COMPLETED",
                           "CANCELLED",
                         ].map((s) => (
-                          <option key={s} value={s}>
+                          <option key={s} value={s} className="bg-neutral-800 text-white">
                             {s}
                           </option>
                         ))}
@@ -1644,7 +1646,6 @@ function AdminCustomersTable({ customers = [], onLoad }) {
     </div>
   );
 }
-// ...existing code...
 function AdminReports({ trend = [], stats = {} }) {
   // เพิ่มฟังก์ชัน export CSV
   const handleExportCSV = () => {
@@ -1733,4 +1734,3 @@ function AdminReports({ trend = [], stats = {} }) {
     </div>
   );
 }
-// ...existing code...
