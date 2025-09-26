@@ -1,4 +1,12 @@
-"use client";
+  "use client";
+  // เพิ่มฟังก์ชันแปลงคะแนน password strength เป็นข้อความ
+  const getStrengthLabel = (score) => {
+    if (score <= 1) return "weak";
+    if (score === 2) return "good";
+    if (score === 3) return "strong";
+    if (score === 4) return "very strong";
+    return "";
+  };
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
@@ -439,7 +447,7 @@ export default function ProfilePage() {
                     ))}
                   </div>
                   <span className="text-xs text-white opacity-70 mt-1">
-                    password strength
+                    password strength ({getStrengthLabel(passwordStrength)})
                   </span>
                 </div>
                 <div>
