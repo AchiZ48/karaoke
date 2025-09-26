@@ -1476,7 +1476,6 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                 <td className="px-4 py-2">{r.status}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    
                     {onEdit && (
                       <button
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
@@ -1549,7 +1548,9 @@ function AdminPromotionsManager({
                     ? `${p.discountValue}%`
                     : `฿${(p.discountValue ?? 0).toLocaleString()}`}
                 </td>
-                <td className="px-4 py-2">{p.isActive ? "Active" : "Inactive"}</td>
+                <td className="px-4 py-2">
+                  {p.isActive ? "Active" : "Inactive"}
+                </td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
                     {onToggleStatus && (
@@ -1649,11 +1650,11 @@ function AdminReports({ trend = [], stats = {} }) {
   const handleExportCSV = () => {
     if (!trend || trend.length === 0) return;
     const header = ["Month", "Revenue (THB)"];
-    const rows = trend.map(t => [t.label, t.value ?? 0]);
+    const rows = trend.map((t) => [t.label, t.value ?? 0]);
     let csvContent =
       header.join(",") +
       "\n" +
-      rows.map(row => row.map(String).join(",")).join("\n");
+      rows.map((row) => row.map(String).join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
