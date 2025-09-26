@@ -55,8 +55,8 @@ const roomSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"],
-      default: "AVAILABLE",
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
       index: true,
     },
   },
@@ -226,7 +226,7 @@ async function main() {
       type: "VIP",
       capacity: 12,
       price: 2500,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Premium Suite A",
@@ -234,7 +234,7 @@ async function main() {
       type: "PREMIUM",
       capacity: 8,
       price: 1600,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Premium Suite B",
@@ -242,7 +242,7 @@ async function main() {
       type: "PREMIUM",
       capacity: 8,
       price: 1700,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Deluxe Suite",
@@ -250,7 +250,7 @@ async function main() {
       type: "DELUXE",
       capacity: 10,
       price: 1800,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Standard Room 1",
@@ -258,7 +258,7 @@ async function main() {
       type: "STANDARD",
       capacity: 6,
       price: 800,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Standard Room 2",
@@ -266,7 +266,7 @@ async function main() {
       type: "STANDARD",
       capacity: 6,
       price: 800,
-      status: "MAINTENANCE",
+      status: "INACTIVE",
     },
   ]);
   console.log(`🚪 Rooms: ${rooms.length}`);
