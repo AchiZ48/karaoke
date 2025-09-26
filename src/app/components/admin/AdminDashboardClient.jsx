@@ -1646,7 +1646,28 @@ function AdminCustomersTable({ customers = [], onLoad }) {
     </div>
   );
 }
+// ...existing code...
 function AdminReports({ trend = [], stats = {} }) {
+  // เพิ่มฟังก์ชัน export CSV
+  const handleExportCSV = () => {
+    if (!trend || trend.length === 0) return;
+    const header = ["Month", "Revenue (THB)"];
+    const rows = trend.map(t => [t.label, t.value ?? 0]);
+    let csvContent =
+      header.join(",") +
+      "\n" +
+      rows.map(row => row.map(String).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "monthly_revenue_report.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 p-4">
@@ -1663,7 +1684,7 @@ function AdminReports({ trend = [], stats = {} }) {
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-white/10 overflow-hidden">
+      <div className="rounded-2xl border border-white/10 overflow-hidden mt-2">
         <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
           Monthly Revenue
         </div>
@@ -1702,6 +1723,16 @@ function AdminReports({ trend = [], stats = {} }) {
           </table>
         </div>
       </div>
+      {/* ปุ่ม export อยู่ข้างล่างและอยู่นอกตาราง Monthly Revenue */}
+      <div className="flex justify-start mt-8">
+        <button
+          onClick={handleExportCSV}
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-2 text-white text-lg font-semibold shadow"
+        >
+          export report
+        </button>
+      </div>
     </div>
   );
 }
+// ...existing code...
