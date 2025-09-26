@@ -19,11 +19,11 @@ export default async function PromotionsPage() {
           <span className="text-[#23235B]">Active </span>
           <span className="text-[#5B5B8C]">Promotions</span>
         </h1>
-        <div className="flex flex-col gap-8">
+        <div className="items-center flex flex-col gap-8">
           {promos.map((p) => (
             <div
               key={p._id}
-              className="rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white"
+              className="w-[90%] rounded-2xl shadow-lg px-8 py-6 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white"
             >
               <div className="text-lg font-bold mb-2">{p.name} !</div>
               <div className="text-sm mb-4 flex items-center gap-2 flex-wrap">
