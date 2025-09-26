@@ -5,7 +5,7 @@ export default function Footer() {
         <div>
           <h3 className="text-2xl font-bold mb-2">CONTACT US</h3>
           <p className="flex items-center gap-2 font-semibold">
-            <span>🎤</span> Borntosing
+            <span>🎤</span> BornToSing
           </p>
           <p className="flex items-center gap-2 font-semibold">
             <span>📞</span> 062-543-7772
