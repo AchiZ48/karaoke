@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Born To Sing",
+  title: "BornToSing",
   description: "A karaoke booking website",
 };
 
