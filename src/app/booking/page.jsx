@@ -267,7 +267,7 @@ export default function BookingPage() {
         if (res.ok) {
           const data = await res.json();
           const status = data?.booking?.status;
-          if (["PAID", "CONFIRMED", "COMPLETED"].includes(status)) {
+          if (["PAID", "CHECKED-IN", "CONFIRMED", "COMPLETED"].includes(status)) {
             clearInterval(iv);
             setWaitingPayment(false);
             setSuccess(`Payment received. Redirecting to ${redirectLabel}...`);
@@ -461,12 +461,7 @@ export default function BookingPage() {
                 disabled={locked}
                 placeholder="Enter number of people"
               />
-              {selectedRoom && (
-                <p className="text-sm text-white opacity-80 mt-1">
-                  Capacity: {selectedRoom.capacity} - Price:{" "}
-                  {selectedRoom.price} THB
-                </p>
-              )}
+              
             </div>
             {/* Promotion */}
             <div>
@@ -490,7 +485,7 @@ export default function BookingPage() {
               </select>
             </div>
             {/* Payment Method */}
-            <div>
+            <div className="mb-2">
               <label className="block mb-2 text-white font-medium">
                 Payment Method
               </label>
@@ -503,12 +498,24 @@ export default function BookingPage() {
                 disabled={locked}
               >
                 <option value="PROMPTPAY">PromptPay</option>
-                <option value="CASH">Cash</option>
+                <option value="CASH">Cash </option>
               </select>
+            </div >
+            <div className="text-center">
+              <p className="text-sm underline tracking-wide text-yellow-500 underline-offset-2">{form.paymentMethod === 'CASH'
+  ? "Pay at the counter at least 1 hour before your booking!!!"
+  : null}</p>
             </div>
+                
             {/* Total */}
             {selectedRoom && (
-              <p className="text-sm text-white opacity-80 mt-1">
+                <p className="text-sm text-white mt-1 mb-2">
+                  Capacity: {selectedRoom.capacity} - Price:{" "}
+                  {selectedRoom.price} THB
+                </p>
+              )}
+            {selectedRoom && (
+              <p className="text-2xl text-white">
                 Total: {priceAfterPromo} THB
               </p>
             )}
@@ -609,3 +616,4 @@ export default function BookingPage() {
     </main>
   );
 }
+

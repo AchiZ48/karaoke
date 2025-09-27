@@ -1,5 +1,6 @@
 "use client";
 import { useSession, signIn } from "next-auth/react";
+import Link from "next/link";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -32,17 +33,17 @@ export default function Home() {
               Login
             </button>
           ) : (
-            <button
+            <Link
               href="/booking"
               className="max-w-50 px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
             >
               Booking
-            </button>
+            </Link>
           )}
         </div>
         {/* Promotion Box */}
         <div
-          className="w-[100%] max-w-6xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
+          className="w-[90%] max-w-6xl rounded-2xl shadow-lg bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white p-8 mt-4 mb-8 flex flex-col items-start"
           style={{ boxShadow: "4px 4px 12px 0 rgba(45,24,74,0.12)" }}
         >
           <h2 className="text-4xl font-bold mb-2">
@@ -63,19 +64,19 @@ export default function Home() {
           </h2>
           <div className="h-[2px] w-full bg-[#e5e5f7] my-6"></div>
           {/* Room Cards */}
-          <div className="flex flex-col gap-30">
+          <div className="grid gap-y-20">
             {/* Standard Room */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-35">
+            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-x-12">
               <img
                 src="/Standardpicture.png"
                 alt="Standard Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
+                className="rounded-2xl shadow-lg w-full h-[260px] object-cover"
               />
-              <div className="flex-1 flex flex-col justify-center">
+              <div className="flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
                   Standard Room
                 </h3>
-                <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-6 space-y-1">
                   <li>เหมาะสำหรับลูกค้ากลุ่มเล็ก รองรับ 1-4 คน</li>
                   <li>ระบบเสียงมาตรฐาน คมชัด</li>
                   <li>จอขนาดกลางพร้อมไมค์คุณภาพ</li>
@@ -84,18 +85,14 @@ export default function Home() {
                 </ul>
               </div>
             </div>
+
             {/* Premium Room */}
-            <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-35">
-              <img
-                src="/Premiumpicture.png"
-                alt="Premium Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover mr-20"
-              />
-              <div className="flex-1 flex flex-col justify-center pl-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-x-12">
+              <div className="order-2 md:order-1 flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
                   Premium Room
                 </h3>
-                <ul className="text-[#222] text-lg list-disc pl-0 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-6 space-y-1">
                   <li>เหมาะสำหรับลูกค้ากลุ่มขนาดกลาง รองรับ 4-8 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียงรอบทิศทาง</li>
                   <li>รองรับปาร์ตี้และการร้องแบบจัดเต็ม</li>
@@ -103,19 +100,25 @@ export default function Home() {
                   <li>ราคาเริ่มต้นที่ 550 บาท/ชั่วโมง</li>
                 </ul>
               </div>
+              <img
+                src="/Premiumpicture.png"
+                alt="Premium Room"
+                className="order-1 md:order-2 rounded-2xl shadow-lg w-full h-[260px] object-cover"
+              />
             </div>
+
             {/* VIP Room */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-35">
+            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-x-12">
               <img
                 src="/VIPpicture.png"
                 alt="VIP Room"
-                className="rounded-2xl shadow-lg w-full md:w-[420px] h-[260px] object-cover ml-20"
+                className="rounded-2xl shadow-lg w-full h-[260px] object-cover"
               />
-              <div className="flex-1 flex flex-col justify-center ">
+              <div className="flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-[#2d184a] mb-4">
                   VIP Room
                 </h3>
-                <ul className="text-[#222] text-lg list-disc pl-8 mb-2">
+                <ul className="text-[#222] text-lg list-disc pl-6 space-y-1">
                   <li>เหมาะสำหรับลูกค้ากลุ่มใหญ่ รองรับ 8-15 คน</li>
                   <li>จอขนาดใหญ่ Full + ระบบเสียง Hi-end</li>
                   <li>บริการพิเศษ : Private waiter / room service</li>

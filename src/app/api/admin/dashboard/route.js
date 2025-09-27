@@ -7,7 +7,21 @@ import Room from "../../../../../models/room";
 import Promotion from "../../../../../models/promotion";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
 
-const TREND_STATUSES = ["CONFIRMED", "PAID", "COMPLETED"];
+const TREND_STATUSES = ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
+const ACTIVE_STATUS_MATCH = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
+
+const normalizeRoomStatus = (value) => {
+  if (value === "INACTIVE") return "INACTIVE";
+  if (value === "ACTIVE") return "ACTIVE";
+  if (value === "MAINTENANCE") return "INACTIVE";
+  if (value === "AVAILABLE" || value === "OCCUPIED") return "ACTIVE";
+  return "ACTIVE";
+};
+
+const normalizeRooms = (items) =>
+  Array.isArray(items)
+    ? items.map((room) => ({ ...room, status: normalizeRoomStatus(room?.status) }))
+    : [];
 
 function buildMonthTrend(raw, startDate, now) {
   const map = new Map();
@@ -58,9 +72,9 @@ export async function GET(request) {
     const requestedScale = (searchParams.get("scale") || "month").toLowerCase();
     const scale = requestedScale === "day" ? "day" : "month";
 
-    const [totalBookings, availableRooms] = await Promise.all([
+    const [totalBookings, activeRooms] = await Promise.all([
       Booking.countDocuments({}),
-      Room.countDocuments({ status: "AVAILABLE" }),
+      Room.countDocuments({ status: { $in: ACTIVE_STATUS_MATCH } }),
     ]);
 
     const revAgg = await Booking.aggregate([
@@ -140,12 +154,15 @@ export async function GET(request) {
       Promotion.find({}).sort({ createdAt: -1 }).lean(),
     ]);
 
+    const Onpending = await Booking.countDocuments({ status: "PENDING" });
+const Onpaid    = await Booking.countDocuments({ status: "PAID" });
+
     return NextResponse.json({
-      stats: { totalBookings, totalRevenue, activeCustomers, availableRooms },
+      stats: { totalBookings, totalRevenue, activeCustomers, activeRooms,Onpending, Onpaid },
       trend,
       scale,
       recentBookings,
-      rooms,
+      rooms: normalizeRooms(rooms),
       promotions,
     });
   } catch (err) {
@@ -156,3 +173,5 @@ export async function GET(request) {
     );
   }
 }
+
+

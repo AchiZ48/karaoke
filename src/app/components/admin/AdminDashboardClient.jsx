@@ -1,8 +1,9 @@
-// components/admin/AdminDashboardClient.jsx
+﻿// components/admin/AdminDashboardClient.jsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
+import { TIME_SLOTS, getCurrentTimeSlot } from "../../../../lib/timeSlots";
 // Navbar is provided by layout
 import { useToast } from "../toast/ToastProvider";
 
@@ -14,6 +15,82 @@ const formatBaht = (amount) =>
     maximumFractionDigits: 0,
   }).format(Number(amount ?? 0));
 
+
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const tzOffsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+};
+
+const ROOM_STATUS_OPTIONS = [
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "Inactive" },
+];
+
+const getRoomStatusLabel = (value) => {
+  const option = ROOM_STATUS_OPTIONS.find((opt) => opt.value === value);
+  return option ? option.label : value || "-";
+};
+
+const normalizeRoomStatus = (value) => {
+  if (value === "ACTIVE" || value === "INACTIVE") return value;
+  if (value === "AVAILABLE" || value === "OCCUPIED") return "ACTIVE";
+  if (value === "MAINTENANCE") return "INACTIVE";
+  return value || "ACTIVE";
+};
+
+const normalizeBookingStatus = (status) =>
+  status === "CONFIRMED" ? "CHECKED-IN" : status;
+
+const BOOKING_STATUS_VALUES = [
+  "PENDING",
+  "CHECKED-IN",
+  "PAID",
+  "COMPLETED",
+  "CANCELLED",
+];
+
+const BOOKING_STATUS_LABELS = {
+  PENDING: "Pending",
+  "CHECKED-IN": "Checked-In",
+  PAID: "Paid",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+};
+
+const getBookingStatusLabel = (status) => {
+  const normalized = normalizeBookingStatus(status);
+  return BOOKING_STATUS_LABELS[normalized] || normalized || "-";
+};
+
+const normalizeBooking = (booking) =>
+  booking
+    ? { ...booking, status: normalizeBookingStatus(booking.status) }
+    : booking;
+
+const normalizeBookings = (items) =>
+  Array.isArray(items) ? items.map((booking) => normalizeBooking(booking)) : [];
+
+const normalizeRoom = (room) => {
+  if (!room) return room;
+  const normalizedRoom = {
+    ...room,
+    status: normalizeRoomStatus(room.status),
+  };
+  if (Array.isArray(room.slots)) {
+    normalizedRoom.slots = room.slots.map((slot) => ({
+      ...slot,
+      bookingStatus: normalizeBookingStatus(slot.bookingStatus),
+    }));
+  }
+  return normalizedRoom;
+};
+
+const normalizeRooms = (items) =>
+  Array.isArray(items) ? items.map((room) => normalizeRoom(room)) : [];
+
 export default function AdminDashboardClient({
   initialStats,
   initialTrend,
@@ -22,12 +99,12 @@ export default function AdminDashboardClient({
   initialPromotions,
 }) {
   const [adminSection, setAdminSection] = useState("dashboard");
-  const [bookings, setBookings] = useState(initialBookings || []);
-  const [rooms, setRooms] = useState(initialRooms || []);
+  const [bookings, setBookings] = useState(() => normalizeBookings(initialBookings));
+  const [rooms, setRooms] = useState(() => normalizeRooms(initialRooms));
   const [promotions, setPromotions] = useState(initialPromotions || []);
   const [stats, setStats] = useState(initialStats || {});
   const [trend, setTrend] = useState(initialTrend || []);
-  const [trendScale, setTrendScale] = useState("month");
+  const [trendScale, setTrendScale] = useState("day");
   const [trendLoading, setTrendLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
@@ -45,18 +122,23 @@ export default function AdminDashboardClient({
   // Toast notifications
   const { showToast } = useToast();
 
+  const [availabilityDate, setAvailabilityDate] = useState(() =>
+    toDateInputValue(new Date()),
+  );
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityRooms, setAvailabilityRooms] = useState([]);
+  const [availabilitySlots, setAvailabilitySlots] = useState(TIME_SLOTS);
+  const [availabilityError, setAvailabilityError] = useState("");
+
   // Modals state
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingDraft, setBookingDraft] = useState(null); // { bookingId, date, timeSlot }
   const [availableSlots, setAvailableSlots] = useState([]);
   const [occupiedSlots, setOccupiedSlots] = useState([]);
-  const timeSlots = [
-    "12:00-14:00",
-    "14:00-16:00",
-    "16:00-18:00",
-    "18:00-20:00",
-    "20:00-22:00",
-  ];
+  const timeSlots = TIME_SLOTS;
+  const [currentSlot, setCurrentSlot] = useState(() =>
+    getCurrentTimeSlot(new Date(), timeSlots),
+  );
 
   const loadDashboard = useCallback(
     async ({ scale = trendScale, updateAll = false } = {}) => {
@@ -69,8 +151,8 @@ export default function AdminDashboardClient({
       if (updateAll) {
         setStats(data.stats || {});
         if (Array.isArray(data.recentBookings))
-          setBookings(data.recentBookings);
-        if (Array.isArray(data.rooms)) setRooms(data.rooms);
+          setBookings(normalizeBookings(data.recentBookings));
+        if (Array.isArray(data.rooms)) setRooms(normalizeRooms(data.rooms));
         if (Array.isArray(data.promotions)) setPromotions(data.promotions);
       }
       setTrend(data.trend || []);
@@ -79,9 +161,35 @@ export default function AdminDashboardClient({
     [trendScale],
   );
 
+  const fetchAvailability = useCallback(
+    async (date) => {
+      const params = new URLSearchParams();
+      if (date) params.set("date", date);
+      const query = params.toString();
+      const res = await fetch(
+        query ? `/api/admin/availability?${query}` : "/api/admin/availability",
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to load availability");
+      }
+      return data;
+    },
+    [],
+  );
+
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const initialTrendScaleLoad = useRef(true);
+
+  useEffect(() => {
+    function updateSlot() {
+      setCurrentSlot(getCurrentTimeSlot(new Date(), timeSlots));
+    }
+    updateSlot();
+    const timer = setInterval(updateSlot, 60000);
+    return () => clearInterval(timer);
+  }, [timeSlots]);
 
   // เตรียม labels/data จาก trend
   const { labels, values } = useMemo(() => {
@@ -168,6 +276,50 @@ export default function AdminDashboardClient({
 
   const showNotification = (msg, type = "success") => showToast(msg, type);
 
+  useEffect(() => {
+    if (adminSection !== "availability") return;
+    let ignore = false;
+    const run = async () => {
+      setAvailabilityLoading(true);
+      setAvailabilityError("");
+      try {
+        const data = await fetchAvailability(availabilityDate);
+        if (!ignore) {
+          setAvailabilityRooms(normalizeRooms(data.rooms));
+          setAvailabilitySlots(data.timeSlots || TIME_SLOTS);
+        }
+      } catch (e) {
+        if (!ignore) {
+          const message = e?.message || "Failed to load availability";
+          setAvailabilityError(message);
+        }
+      } finally {
+        if (!ignore) setAvailabilityLoading(false);
+      }
+    };
+    run();
+    return () => {
+      ignore = true;
+    };
+  }, [adminSection, availabilityDate, fetchAvailability]);
+
+  const handleAvailabilityRefresh = useCallback(async () => {
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+    try {
+      const data = await fetchAvailability(availabilityDate);
+      setAvailabilityRooms(normalizeRooms(data.rooms));
+      setAvailabilitySlots(data.timeSlots || TIME_SLOTS);
+      showNotification("Availability updated");
+    } catch (e) {
+      const message = e?.message || "Failed to load availability";
+      setAvailabilityError(message);
+      showNotification(message, "error");
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }, [availabilityDate, fetchAvailability, showNotification]);
+
   // Derived filtered lists
   const filteredBookings = useMemo(() => {
     let list = bookings || [];
@@ -182,7 +334,9 @@ export default function AdminDashboardClient({
           b.room?.number?.toLowerCase().includes(q),
       );
     }
-    if (bookingStatus) list = list.filter((b) => b.status === bookingStatus);
+    if (bookingStatus) {
+      list = list.filter((b) => normalizeBookingStatus(b.status) === bookingStatus);
+    }
     return list;
   }, [bookings, bookingSearch, bookingStatus]);
 
@@ -255,7 +409,8 @@ export default function AdminDashboardClient({
           <nav className="space-y-1">
             {[
               { key: "dashboard", icon: "📊", label: "Dashboard" },
-              { key: "bookings", icon: "📅", label: "All Bookings" },
+              { key: "bookings", icon: "📑", label: "All Bookings" },
+              { key: "availability", icon: "📅", label: "Room Availability" },
               { key: "rooms", icon: "🚪", label: "Room Management" },
               { key: "promotions", icon: "🎁", label: "Promotions" },
               { key: "customers", icon: "👥", label: "Customers" },
@@ -303,7 +458,19 @@ export default function AdminDashboardClient({
               </div>
 
               {/* Stats */}
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 mb-6">
+                <StatCard
+                  icon="⏳"
+                  value={stats?.Onpending ?? 0}
+                  label="On pending"
+                  changeType="positive"
+                />
+                <StatCard
+                  icon="💸"
+                  value={stats?.Onpaid ?? 0}
+                  label="On paid"
+                  changeType="positive"
+                />
                 <StatCard
                   icon="📅"
                   value={stats?.totalBookings ?? 0}
@@ -324,9 +491,9 @@ export default function AdminDashboardClient({
                 />
                 <StatCard
                   icon="🚪"
-                  value={`${stats?.availableRooms ?? 0}/${rooms.length}`}
-                  label="Available Rooms"
-                  changeType="negative"
+                  value={`${stats?.activeRooms ?? 0}/${rooms.length}`}
+                  label="Active Rooms"
+                  changeType="positive"
                 />
               </div>
 
@@ -341,8 +508,8 @@ export default function AdminDashboardClient({
                       onChange={(e) => setTrendScale(e.target.value)}
                       className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     >
-                      <option value="month">Monthly (last 6 months)</option>
-                      <option value="day">Daily (last 30 days)</option>
+                      <option value="month" className="bg-neutral-800 text-white">Monthly (last 6 months)</option>
+                      <option value="day" className="bg-neutral-800 text-white">Daily (last 30 days)</option>
                     </select>
                   </div>
                 </div>
@@ -360,7 +527,7 @@ export default function AdminDashboardClient({
                   setBookingDraft({
                     bookingId: b.bookingId,
                     date: b.date
-                      ? new Date(b.date).toISOString().slice(0, 10)
+                      ? toDateInputValue(b.date)
                       : "",
                     timeSlot: b.timeSlot,
                   });
@@ -387,17 +554,14 @@ export default function AdminDashboardClient({
                   onChange={(e) => setBookingStatus(e.target.value)}
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
-                  <option value="">All Status</option>
-                  {[
-                    "PENDING",
-                    "CONFIRMED",
-                    "PAID",
-                    "COMPLETED",
-                    "CANCELLED",
-                    "REFUNDED",
-                  ].map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  {BOOKING_STATUS_VALUES.map((value) => (
+                    <option
+                      key={value}
+                      value={value}
+                      className="bg-neutral-800 text-white"
+                    >
+                      {getBookingStatusLabel(value)}
                     </option>
                   ))}
                 </select>
@@ -410,7 +574,7 @@ export default function AdminDashboardClient({
                   setBookingDraft({
                     bookingId: b.bookingId,
                     date: b.date
-                      ? new Date(b.date).toISOString().slice(0, 10)
+                      ? toDateInputValue(b.date)
                       : "",
                     timeSlot: b.timeSlot,
                   });
@@ -421,14 +585,14 @@ export default function AdminDashboardClient({
                     const res = await fetch(`/api/bookings/${bookingId}`, {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ status: newStatus }),
+                      body: JSON.stringify({ status: normalizeBookingStatus(newStatus) }),
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
                     setBookings((prev) =>
                       prev.map((b) =>
                         b.bookingId === bookingId
-                          ? { ...b, status: newStatus }
+                          ? { ...b, status: normalizeBookingStatus(newStatus) }
                           : b,
                       ),
                     );
@@ -437,6 +601,47 @@ export default function AdminDashboardClient({
                     showNotification(e.message);
                   }
                 }}
+              />
+            </>
+          )}
+
+          {adminSection === "availability" && (
+            <>
+              <h1 className="text-2xl font-semibold mb-6">
+                Room Availability
+              </h1>
+              <div className="flex flex-wrap items-end gap-3 mb-4">
+                <div className="flex flex-col">
+                  <label className="text-xs uppercase tracking-wide text-white/60 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={availabilityDate}
+                    onChange={(e) => {
+                      const value = e.target.value || toDateInputValue(new Date());
+                      setAvailabilityDate(value);
+                    }}
+                    className="px-3 py-2 rounded-lg border border-white/10 bg-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                </div>
+                <button
+                  onClick={handleAvailabilityRefresh}
+                  disabled={availabilityLoading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 px-4 py-2"
+                >
+                  {availabilityLoading ? "Loading..." : "Refresh"}
+                </button>
+              </div>
+              {availabilityError && (
+                <div className="mb-4 text-sm text-red-400">{availabilityError}</div>
+              )}
+              <RoomAvailabilityTable
+                rooms={availabilityRooms}
+                slots={availabilitySlots}
+                selectedDate={availabilityDate}
+                currentSlot={currentSlot}
+                loading={availabilityLoading}
               />
             </>
           )}
@@ -455,7 +660,7 @@ export default function AdminDashboardClient({
                     type: form.type.value,
                     capacity: Number(form.capacity.value),
                     price: Number(form.price.value),
-                    status: form.status.value,
+                    status: normalizeRoomStatus(form.status.value),
                   };
                   try {
                     const res = await fetch("/api/rooms", {
@@ -465,7 +670,7 @@ export default function AdminDashboardClient({
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
-                    setRooms((prev) => [data.room, ...prev]);
+                    setRooms((prev) => [normalizeRoom(data.room), ...prev]);
                     form.reset();
                     showNotification("Room created");
                   } catch (e) {
@@ -490,7 +695,7 @@ export default function AdminDashboardClient({
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
                   {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                    <option key={t} value={t}>
+                    <option key={t} value={t} className="bg-neutral-800 text-white">
                       {t}
                     </option>
                   ))}
@@ -515,9 +720,9 @@ export default function AdminDashboardClient({
                   name="status"
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
-                  {["AVAILABLE", "OCCUPIED", "MAINTENANCE"].map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                  {ROOM_STATUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                      {opt.label}
                     </option>
                   ))}
                 </select>
@@ -534,7 +739,7 @@ export default function AdminDashboardClient({
                     type: "STANDARD",
                     capacity: 1,
                     price: 0,
-                    status: "AVAILABLE",
+                    status: "ACTIVE",
                   });
                   setShowRoomModal(true);
                 }}
@@ -553,27 +758,30 @@ export default function AdminDashboardClient({
                   onChange={(e) => setRoomStatus(e.target.value)}
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
-                  <option value="">All Status</option>
-                  <option value="AVAILABLE">AVAILABLE</option>
-                  <option value="OCCUPIED">OCCUPIED</option>
-                  <option value="MAINTENANCE">MAINTENANCE</option>
+                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  {ROOM_STATUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <AdminRoomsTable
                 rooms={filteredRooms}
                 onStatusChange={async (roomId, newStatus) => {
+                  const nextStatus = normalizeRoomStatus(newStatus);
                   try {
                     const res = await fetch("/api/rooms", {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ id: roomId, status: newStatus }),
+                      body: JSON.stringify({ id: roomId, status: nextStatus }),
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
                     setRooms((prev) =>
                       prev.map((r) =>
                         String(r._id) === String(roomId)
-                          ? { ...r, status: newStatus }
+                          ? { ...r, status: nextStatus }
                           : r,
                       ),
                     );
@@ -582,7 +790,7 @@ export default function AdminDashboardClient({
                   }
                 }}
                 onEdit={(room) => {
-                  setRoomDraft({ ...room });
+                  setRoomDraft(normalizeRoom(room));
                   setShowRoomModal(true);
                 }}
                 onDelete={async (roomId) => {
@@ -673,7 +881,7 @@ export default function AdminDashboardClient({
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
                   {["PERCENT", "FIXED"].map((t) => (
-                    <option key={t} value={t}>
+                    <option key={t} value={t} className="bg-neutral-800 text-white">
                       {t}
                     </option>
                   ))}
@@ -718,9 +926,9 @@ export default function AdminDashboardClient({
                   onChange={(e) => setPromoActive(e.target.value)}
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
-                  <option value="">All</option>
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="" className="bg-neutral-800 text-white">All</option>
+                  <option value="1" className="bg-neutral-800 text-white">Active</option>
+                  <option value="0" className="bg-neutral-800 text-white">Inactive</option>
                 </select>
               </div>
               <AdminPromotionsManager
@@ -868,6 +1076,7 @@ export default function AdminDashboardClient({
               >
                 {timeSlots.map((t) => (
                   <option
+                    className="bg-neutral-800 text-white"
                     key={t}
                     value={t}
                     disabled={
@@ -910,6 +1119,7 @@ export default function AdminDashboardClient({
               e.preventDefault();
               try {
                 const payload = { ...roomDraft };
+                payload.status = normalizeRoomStatus(payload.status);
                 if (roomDraft._id) {
                   const res = await fetch("/api/rooms", {
                     method: "PATCH",
@@ -929,7 +1139,7 @@ export default function AdminDashboardClient({
                   setRooms((prev) =>
                     prev.map((r) =>
                       String(r._id) === String(roomDraft._id)
-                        ? { ...r, ...payload }
+                        ? normalizeRoom({ ...r, ...payload })
                         : r,
                     ),
                   );
@@ -948,7 +1158,7 @@ export default function AdminDashboardClient({
                   });
                   const data = await res.json();
                   if (!res.ok) throw new Error(data?.message || "Failed");
-                  setRooms((prev) => [data.room, ...prev]);
+                  setRooms((prev) => [normalizeRoom(data.room), ...prev]);
                 }
                 setShowRoomModal(false);
               } catch (e) {
@@ -982,7 +1192,7 @@ export default function AdminDashboardClient({
               }
             >
               {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                <option key={t} value={t}>
+                <option key={t} value={t} className="bg-neutral-800 text-white">
                   {t}
                 </option>
               ))}
@@ -1018,12 +1228,12 @@ export default function AdminDashboardClient({
               className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
               value={roomDraft.status}
               onChange={(e) =>
-                setRoomDraft((d) => ({ ...d, status: e.target.value }))
+                setRoomDraft((d) => ({ ...d, status: normalizeRoomStatus(e.target.value) }))
               }
             >
-              {["AVAILABLE", "OCCUPIED", "MAINTENANCE"].map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {ROOM_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                  {opt.label}
                 </option>
               ))}
             </select>
@@ -1133,7 +1343,7 @@ export default function AdminDashboardClient({
                 }
               >
                 {["PERCENT", "FIXED"].map((t) => (
-                  <option key={t} value={t}>
+                  <option key={t} value={t} className="bg-neutral-800 text-white">
                     {t}
                   </option>
                 ))}
@@ -1265,19 +1475,18 @@ function QuickAction({ onClick, icon, text }) {
 }
 
 function StatusBadge({ status }) {
+  const normalized = normalizeBookingStatus(status);
   const map = {
-    CONFIRMED: "bg-emerald-500/15 text-emerald-300",
+    "CHECKED-IN": "bg-emerald-500/15 text-emerald-300",
     PENDING: "bg-amber-500/15 text-amber-300",
     PAID: "bg-sky-500/15 text-sky-300",
     COMPLETED: "bg-violet-500/15 text-violet-300",
     CANCELLED: "bg-rose-500/15 text-rose-300",
-    REFUNDED: "bg-slate-500/15 text-slate-300",
   };
+  const classes = map[normalized] || "bg-white/10 text-white/70";
   return (
-    <span
-      className={`inline-flex rounded-full px-2 py-0.5 text-xs ${map[status] || "bg-white/10 text-white/70"}`}
-    >
-      {status}
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${classes}`}>
+      {getBookingStatusLabel(normalized)}
     </span>
   );
 }
@@ -1339,7 +1548,7 @@ function AdminBookingsTable({
                 </td>
                 <td className="px-4 py-2">
                   <div>
-                    {b.date ? new Date(b.date).toISOString().slice(0, 10) : "-"}
+                    {b.date ? toDateInputValue(b.date) : "-"}
                   </div>
                   <div className="text-xs text-neutral-500 dark:text-white/60">
                     {b.timeSlot}
@@ -1363,22 +1572,19 @@ function AdminBookingsTable({
                     {onStatusChange && (
                       <select
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
-                        value={b.status}
+                        value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
                         }
                         title="Change status"
                       >
-                        {[
-                          "PENDING",
-                          "CONFIRMED",
-                          "PAID",
-                          "COMPLETED",
-                          "CANCELLED",
-                          "REFUNDED",
-                        ].map((s) => (
-                          <option key={s} value={s}>
-                            {s}
+                        {BOOKING_STATUS_VALUES.map((value) => (
+                          <option
+                            key={value}
+                            value={value}
+                            className="bg-neutral-800 text-white"
+                          >
+                            {getBookingStatusLabel(value)}
                           </option>
                         ))}
                       </select>
@@ -1387,19 +1593,21 @@ function AdminBookingsTable({
                     {false && (
                       <select
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
-                        value={b.status}
+                        value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
                         }
                         title="Change status"
                       >
-                        {["PENDING", "PAID", "COMPLETED", "CANCELLED"].map(
-                          (s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ),
-                        )}
+                        {BOOKING_STATUS_VALUES.map((value) => (
+                          <option
+                            key={value}
+                            value={value}
+                            className="bg-neutral-800 text-white"
+                          >
+                            {getBookingStatusLabel(value)}
+                          </option>
+                        ))}
                       </select>
                     )}
                     {onStatusChange && (
@@ -1428,6 +1636,107 @@ function AdminBookingsTable({
               <tr>
                 <td colSpan={8} className="px-4 py-6 text-center text-white/60">
                   No data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function RoomAvailabilityTable({
+  rooms = [],
+  slots = [],
+  selectedDate,
+  currentSlot,
+  loading,
+}) {
+  const today = toDateInputValue(new Date());
+  const highlightSlot = selectedDate === today ? currentSlot : null;
+
+  return (
+    <div className="rounded-2xl border border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+        Availability Overview
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-white/5">
+            <tr>
+              <th className="px-4 py-2 text-left font-medium text-white/80">Room</th>
+              {slots.map((slot) => (
+                <th key={slot} className="px-3 py-2 text-left font-medium text-white/70">
+                  {slot}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rooms.map((room, index) => {
+              const roomSlots = Array.isArray(room?.slots) ? room.slots : [];
+              const roomKey = room?._id || room?.id || `${room?.number ?? "room"}-${index}`;
+              return (
+                <tr key={roomKey} className="border-t border-white/10">
+                  <td className="px-4 py-3 align-top">
+                    <div className="font-medium">{room?.name || `Room ${room?.number ?? index + 1}`}</div>
+                    <div className="text-xs text-white/60">
+                      #{room?.number || "-"} · {getRoomStatusLabel(room?.status)}
+                    </div>
+                  </td>
+                  {slots.map((slot) => {
+                    const slotInfo = roomSlots.find((s) => s?.slot === slot);
+                    const isBooked = slotInfo?.status === "BOOKED";
+                    const isHighlight = highlightSlot && slot === highlightSlot;
+                    const cellClasses = [
+                      "px-3 py-2 text-xs align-top min-w-[130px]",
+                      isBooked
+                        ? "bg-red-500/10 text-red-200"
+                        : "bg-emerald-500/10 text-emerald-200",
+                      isHighlight ? "ring-2 ring-violet-400" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
+
+                    return (
+                      <td key={slot} className={cellClasses}>
+                        <div className="font-semibold">
+                          {isBooked ? "Booked" : "Available"}
+                        </div>
+                        {slotInfo?.customerName && (
+                          <div className="text-[11px] text-white/70">
+                            {slotInfo.customerName}
+                          </div>
+                        )}
+                        {slotInfo?.bookingStatus && (
+                          <div className="text-[10px] uppercase tracking-wide text-white/40">
+                            {slotInfo.bookingStatus}
+                          </div>
+                        )}
+                        {slotInfo?.bookingId && (
+                          <div className="text-[10px] text-white/30">
+                            #{slotInfo.bookingId}
+                          </div>
+                        )}
+                        {!isBooked && (
+                          <div className="text-[10px] text-white/40 mt-1">
+                            Open slot
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+            {(!rooms || rooms.length === 0) && (
+              <tr>
+                <td
+                  colSpan={slots.length + 1}
+                  className="px-4 py-6 text-center text-white/60"
+                >
+                  {loading ? "Loading availability..." : "No rooms found"}
                 </td>
               </tr>
             )}
@@ -1476,10 +1785,9 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                 <td className="px-4 py-2">
                   ฿{(r.price ?? 0).toLocaleString()}
                 </td>
-                <td className="px-4 py-2">{r.status}</td>
+                <td className="px-4 py-2">{getRoomStatusLabel(r.status)}</td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    
                     {onEdit && (
                       <button
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
@@ -1552,7 +1860,9 @@ function AdminPromotionsManager({
                     ? `${p.discountValue}%`
                     : `฿${(p.discountValue ?? 0).toLocaleString()}`}
                 </td>
-                <td className="px-4 py-2">{p.isActive ? "Active" : "Inactive"}</td>
+                <td className="px-4 py-2">
+                  {p.isActive ? "Active" : "Inactive"}
+                </td>
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
                     {onToggleStatus && (
@@ -1628,7 +1938,7 @@ function AdminCustomersTable({ customers = [], onLoad }) {
                 <td className="px-4 py-2">{c.phone}</td>
                 <td className="px-4 py-2">
                   {c.createdAt
-                    ? new Date(c.createdAt).toISOString().slice(0, 10)
+                    ? toDateInputValue(c.createdAt)
                     : "-"}
                 </td>
               </tr>
@@ -1646,7 +1956,28 @@ function AdminCustomersTable({ customers = [], onLoad }) {
     </div>
   );
 }
+// ...existing code...
 function AdminReports({ trend = [], stats = {} }) {
+  // เพิ่มฟังก์ชัน export CSV
+  const handleExportCSV = () => {
+    if (!trend || trend.length === 0) return;
+    const header = ["Month", "Revenue (THB)"];
+    const rows = trend.map((t) => [t.label, t.value ?? 0]);
+    let csvContent =
+      header.join(",") +
+      "\n" +
+      rows.map((row) => row.map(String).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "monthly_revenue_report.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 p-4">
@@ -1663,7 +1994,7 @@ function AdminReports({ trend = [], stats = {} }) {
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-white/10 overflow-hidden">
+      <div className="rounded-2xl border border-white/10 overflow-hidden mt-2">
         <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
           Monthly Revenue
         </div>
@@ -1702,6 +2033,17 @@ function AdminReports({ trend = [], stats = {} }) {
           </table>
         </div>
       </div>
+      {/* ปุ่ม export อยู่ข้างล่างและอยู่นอกตาราง Monthly Revenue */}
+      <div className="flex justify-start mt-8">
+        <button
+          onClick={handleExportCSV}
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-6 py-2 text-white text-lg font-semibold shadow"
+        >
+          export report
+        </button>
+      </div>
     </div>
   );
 }
+// ...existing code...
+

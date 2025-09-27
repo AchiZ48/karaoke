@@ -55,8 +55,8 @@ const roomSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"],
-      default: "AVAILABLE",
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
       index: true,
     },
   },
@@ -123,7 +123,7 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       enum: [
         "PENDING",
-        "CONFIRMED",
+        "CHECKED-IN",
         "PAID",
         "COMPLETED",
         "CANCELLED",
@@ -174,7 +174,7 @@ const timeSlots = [
   "18:00-20:00",
   "20:00-22:00",
 ];
-const statuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+const statuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED"];
 const payments = ["CASH", "PROMPTPAY", "STRIPE"];
 const pad = (n, len = 4) => String(n).padStart(len, "0");
 const year = new Date().getFullYear();
@@ -226,7 +226,7 @@ async function main() {
       type: "VIP",
       capacity: 12,
       price: 2500,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Premium Suite A",
@@ -234,7 +234,7 @@ async function main() {
       type: "PREMIUM",
       capacity: 8,
       price: 1600,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Premium Suite B",
@@ -242,7 +242,7 @@ async function main() {
       type: "PREMIUM",
       capacity: 8,
       price: 1700,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Deluxe Suite",
@@ -250,7 +250,7 @@ async function main() {
       type: "DELUXE",
       capacity: 10,
       price: 1800,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Standard Room 1",
@@ -258,7 +258,7 @@ async function main() {
       type: "STANDARD",
       capacity: 6,
       price: 800,
-      status: "AVAILABLE",
+      status: "ACTIVE",
     },
     {
       name: "Standard Room 2",
@@ -266,7 +266,7 @@ async function main() {
       type: "STANDARD",
       capacity: 6,
       price: 800,
-      status: "MAINTENANCE",
+      status: "INACTIVE",
     },
   ]);
   console.log(`🚪 Rooms: ${rooms.length}`);

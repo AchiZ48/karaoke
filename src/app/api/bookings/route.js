@@ -97,9 +97,10 @@ export async function POST(req) {
     await connectMongoDB();
     await expireStaleBookings();
 
+    const activeStatusMatch = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
     const room = await Room.findOne({
       number: String(roomNumber).toUpperCase(),
-      status: { $in: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"] },
+      status: { $in: activeStatusMatch },
     }).lean();
     if (!room) {
       return NextResponse.json({ message: "Room not found" }, { status: 404 });
@@ -141,7 +142,7 @@ export async function POST(req) {
     }
 
     // Ensure slot availability (no existing active booking for same room/date/slot)
-    const activeStatuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+    const activeStatuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
     const nextDay = new Date(reqDate);
     nextDay.setDate(nextDay.getDate() + 1);
     const exists = await Booking.exists({
@@ -249,3 +250,4 @@ export async function POST(req) {
     );
   }
 }
+

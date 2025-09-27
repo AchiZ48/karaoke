@@ -18,26 +18,29 @@ export default async function AdminPage() {
   await expireStaleBookings();
 
   // ----- Stats -----
-  const [totalBookings, availableRooms] = await Promise.all([
+  const activeStatusMatch = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
+  const [totalBookings, activeRooms] = await Promise.all([
     Booking.countDocuments({}),
-    Room.countDocuments({ status: "AVAILABLE" }),
+    Room.countDocuments({ status: { $in: activeStatusMatch } }),
   ]);
 
+  const revenueStatuses = ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
+
   const revAgg = await Booking.aggregate([
-    { $match: { status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] } } },
+    { $match: { status: { $in: revenueStatuses } } },
     { $group: { _id: null, revenue: { $sum: "$totalAmount" } } },
   ]);
   const totalRevenue = revAgg[0]?.revenue ?? 0;
 
   const activeCustomers = (await Booking.distinct("customerEmail")).length;
 
-  // ----- Revenue trend (6 เดือนล่าสุด) -----
+  // ----- Revenue trend (last 6 months) -----
   const now = new Date();
   const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
   const trendAgg = await Booking.aggregate([
     {
       $match: {
-        status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] },
+        status: { $in: revenueStatuses },
         date: { $gte: startDate },
       },
     },
@@ -68,7 +71,7 @@ export default async function AdminPage() {
     Promotion.find({}).sort({ createdAt: -1 }).lean(),
   ]);
 
-  // ✅ JSON hack: แปลงเป็น plain objects ที่ส่งเข้า Client ได้
+  // JSON hack: convert to plain objects so the Client can consume them safely
   const initialBookings = JSON.parse(JSON.stringify(recentBookingsRaw));
   const initialRooms = JSON.parse(JSON.stringify(roomsRaw));
   const initialPromotions = JSON.parse(JSON.stringify(promotionsRaw));
@@ -80,7 +83,7 @@ export default async function AdminPage() {
         totalBookings,
         totalRevenue,
         activeCustomers,
-        availableRooms,
+        activeRooms,
       }}
       initialTrend={initialTrend}
       initialBookings={initialBookings}
@@ -89,3 +92,4 @@ export default async function AdminPage() {
     />
   );
 }
+

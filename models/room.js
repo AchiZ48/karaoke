@@ -22,8 +22,8 @@ const roomSchema = new Schema(
     price: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ["AVAILABLE", "OCCUPIED", "MAINTENANCE"],
-      default: "AVAILABLE",
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE",
       index: true,
     },
     // optional:

@@ -6,6 +6,18 @@ import Booking from "../../../models/booking";
 import { expireStaleBookings } from "../../../lib/bookingCleanup";
 import ActionsCell from "./ActionsCell";
 
+const STATUS_LABELS = {
+  PENDING: "Pending",
+  "CHECKED-IN": "Checked-In",
+  CONFIRMED: "Checked-In",
+  PAID: "Paid",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  REFUNDED: "Refunded",
+};
+
+const COMPLETE_STATUSES = ["PAID", "COMPLETED", "CHECKED-IN", "CONFIRMED"];
+
 export default async function MyBookingsPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login?callbackUrl=/my-bookings");
@@ -23,7 +35,7 @@ export default async function MyBookingsPage() {
   const total = list.length;
   const pending = list.filter((b) => b.status === "PENDING").length;
   const complete = list.filter((b) =>
-    ["PAID", "COMPLETED", "CONFIRMED"].includes(b.status),
+    COMPLETE_STATUSES.includes(b.status),
   ).length;
 
   return (
@@ -54,12 +66,14 @@ export default async function MyBookingsPage() {
         </div>
 
         {/* Bookings Table */}
-        <div className="overflow-x-auto">
-          <div className="rounded-2xl bg-gradient-to-r from-[#6768AB] to-[#210535] shadow-lg text-white">
-            <div className="px-6 pt-6 pb-2 text-lg font-semibold">
-              My Bookings
-            </div>
-            <table className="w-full text-sm rounded-2xl">
+        <div className="rounded-2xl bg-gradient-to-r from-[#6768AB] to-[#210535] shadow-lg text-white">
+          <div className="px-6 pt-6 pb-2 text-lg font-semibold">
+            My Bookings
+          </div>
+
+          {/* ให้ scroll แค่ตรงนี้ */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead className="bg-white/10 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">BookingID</th>
@@ -81,7 +95,7 @@ export default async function MyBookingsPage() {
                       {new Date(b.date).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">{b.timeSlot}</td>
-                    <td className="px-4 py-3">{b.status}</td>
+                    <td className="px-4 py-3">{STATUS_LABELS[b.status] || b.status}</td>
                     <td className="px-4 py-3">
                       <ActionsCell
                         bookingId={b.bookingId}

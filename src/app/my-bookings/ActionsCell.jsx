@@ -3,6 +3,7 @@ import React from "react";
 import { useToast } from "../components/toast/ToastProvider";
 
 const timeSlots = [
+  "10:00-12:00",
   "12:00-14:00",
   "14:00-16:00",
   "16:00-18:00",
@@ -145,6 +146,44 @@ export default function ActionsCell({ bookingId, status, paymentMethod }) {
     }, 1000);
     return () => clearInterval(iv);
   }, [expiresAt, bookingId, showPromptPay]);
+
+  React.useEffect(() => {
+    if (!showPromptPay || !bookingId) return;
+    let cancelled = false;
+    let timeoutId = null;
+    let attempts = 0;
+
+    const poll = async () => {
+      if (cancelled) return;
+      try {
+        const res = await fetch(`/api/bookings/${bookingId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const nextStatus = data?.booking?.status;
+          if (nextStatus && nextStatus !== "PENDING") {
+            cancelled = true;
+            setShowPromptPay(false);
+            setMsg("Payment confirmed. Booking updated.");
+            showToast("PromptPay payment confirmed", "success");
+            window.location.reload();
+            return;
+          }
+        }
+      } catch (err) {
+        // ignore polling errors
+      }
+      attempts += 1;
+      if (!cancelled && attempts < 36) {
+        timeoutId = setTimeout(poll, 5000);
+      }
+    };
+
+    poll();
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [bookingId, showPromptPay, showToast]);
 
   async function openReschedule() {
     setRescheduleError("");

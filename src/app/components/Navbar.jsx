@@ -76,7 +76,7 @@ export default function Navbar() {
               alt="BornToSing"
               className="h-8 sm:h-10 md:h-12 w-auto shrink-0"
             />
-            Borntosing
+            BornToSing
           </Link>
           <div className="flex gap-8 items-center [@container(max-width:900px)]:hidden">
             <ul className="flex gap-8 items-center">
@@ -212,6 +212,18 @@ export default function Navbar() {
                     </li>
                   ))}
               </ul>
+              <Link
+                        href="/profile"
+                        onClick={closeDrawer}
+                        className="my-5 block px-3 py-3 rounded-lg text-white text-center text-3xl font-medium hover:opacity-80 transition relative pb-1
+                    after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 
+                    after:bg-[#7b7bbd] after:transition-all after:duration-300 
+                    hover:after:w-full"
+                      >
+                        <span className="inline-flex items-center gap-3">
+                          Profile
+                        </span>
+                      </Link>
               <div className="mt-6 grid grid-cols-1 gap-3 items-center">
                 {items
                   .filter((it) => it.button)
