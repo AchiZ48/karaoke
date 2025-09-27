@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../lib/mongodb";
 import Booking from "../../../models/booking";
+import { formatBookingDateInput } from "../../../lib/timezone";
 import { expireStaleBookings } from "../../../lib/bookingCleanup";
 import ActionsCell from "./ActionsCell";
 
@@ -32,9 +33,14 @@ export default async function MyBookingsPage() {
     .sort({ createdAt: -1 })
     .lean();
 
-  const total = list.length;
-  const pending = list.filter((b) => b.status === "PENDING").length;
-  const complete = list.filter((b) =>
+  const normalizedList = list.map((b) => ({
+    ...b,
+    formattedDate: formatBookingDateInput(b.date),
+  }));
+
+  const total = normalizedList.length;
+  const pending = normalizedList.filter((b) => b.status === "PENDING").length;
+  const complete = normalizedList.filter((b) =>
     COMPLETE_STATUSES.includes(b.status),
   ).length;
 
@@ -85,15 +91,13 @@ export default async function MyBookingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((b) => (
+                {normalizedList.map((b) => (
                   <tr key={b._id} className="border-t border-white/10">
                     <td className="px-4 py-3 font-medium">{b.bookingId}</td>
                     <td className="px-4 py-3">
                       {b.room?.name || b.room?.number}
                     </td>
-                    <td className="px-4 py-3">
-                      {new Date(b.date).toLocaleDateString()}
-                    </td>
+                    <td className="px-4 py-3">{b.formattedDate || "-"}</td>
                     <td className="px-4 py-3">{b.timeSlot}</td>
                     <td className="px-4 py-3">{STATUS_LABELS[b.status] || b.status}</td>
                     <td className="px-4 py-3">
@@ -105,7 +109,7 @@ export default async function MyBookingsPage() {
                     </td>
                   </tr>
                 ))}
-                {list.length === 0 && (
+                {normalizedList.length === 0 && (
                   <tr>
                     <td
                       colSpan={6}
@@ -123,3 +127,5 @@ export default async function MyBookingsPage() {
     </main>
   );
 }
+
+
