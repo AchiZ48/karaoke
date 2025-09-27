@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useToast } from "../components/toast/ToastProvider";
 
-// รูปตา
-// View.png = เปิดดูรหัส, Veiw_Hide.png = ซ่อนรหัส
+// ?????
+// View.png = ??????????, Veiw_Hide.png = ????????
 
 const passwordStrengthLabels = [
   "Too weak",
@@ -24,7 +24,7 @@ function getStrength(value = "") {
   return score;
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const params = useSearchParams();
   const token = params.get("token") || "";
   const email = params.get("email") || "";
@@ -262,5 +262,20 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </main>
+  );
+}
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="bg-[#f8f8fa] min-h-screen inset-0 z-50 flex items-center justify-center">
+          <div className="relative w-full max-w-lg bg-gradient-to-b from-[#7b7bbd] to-[#2d184a] rounded-[2.5rem] shadow-lg p-10 flex flex-col items-center">
+            <h1 className="text-3xl font-bold text-center text-white">Loading...</h1>
+          </div>
+        </main>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
