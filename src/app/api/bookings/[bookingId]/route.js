@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../../lib/mongodb";
+import { addBookingDays, parseBookingDate, parseBookingDateTime, startOfBookingDay } from "../../../../../lib/timezone";
 import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
@@ -141,31 +142,27 @@ export async function PATCH(req, context) {
           { message: "Invalid timeSlot" },
           { status: 400 },
         );
-      const reqDate = new Date(newDate);
-      reqDate.setHours(0, 0, 0, 0);
-      const currentDate = new Date(booking.date);
-      currentDate.setHours(0, 0, 0, 0);
-      const sameDate = currentDate.getTime() === reqDate.getTime();
+      const reqDate = parseBookingDate(newDate);
+      const currentDate = startOfBookingDay(booking.date);
+      const sameDate = currentDate && reqDate && currentDate.getTime() === reqDate.getTime();
       const sameSlot = booking.timeSlot === newTimeSlot;
       if (sameDate && sameSlot) {
         return NextResponse.json({ booking });
       }
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (reqDate < today)
+      const today = startOfBookingDay(new Date());
+      if (!reqDate || !today || reqDate < today)
         return NextResponse.json(
           { message: "Date cannot be in the past" },
           { status: 400 },
         );
       // If today, ensure end time not passed
       const now = new Date();
-      const isToday = now.toDateString() === reqDate.toDateString();
+      const todayStart = startOfBookingDay(now);
+      const isToday = todayStart ? todayStart.getTime() === reqDate.getTime() : false;
       if (isToday) {
-        const [_, end] = newTimeSlot.split("-");
-        const [eh, em] = end.split(":").map(Number);
-        const slotEnd = new Date(reqDate);
-        slotEnd.setHours(eh, em, 0, 0);
-        if (slotEnd.getTime() <= now.getTime())
+        const [, end] = newTimeSlot.split("-");
+        const slotEnd = parseBookingDateTime(newDate, end);
+        if (!slotEnd || slotEnd.getTime() <= now.getTime())
           return NextResponse.json(
             { message: "Selected time slot already passed" },
             { status: 400 },
@@ -173,8 +170,12 @@ export async function PATCH(req, context) {
       }
       // Check availability for same room/date/slot
       const activeStatuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
-      const nextDay = new Date(reqDate);
-      nextDay.setDate(nextDay.getDate() + 1);
+      const nextDay = addBookingDays(reqDate, 1);
+      if (!nextDay)
+        return NextResponse.json(
+          { message: "Invalid date" },
+          { status: 400 },
+        );
       const exists = await Booking.exists({
         "room.number": booking.room.number,
         date: { $gte: reqDate, $lt: nextDay },
@@ -203,3 +204,4 @@ export async function PATCH(req, context) {
     );
   }
 }
+

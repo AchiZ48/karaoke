@@ -2,24 +2,16 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../../lib/mongodb";
+import { addBookingDays, formatBookingDateInput, parseBookingDate, startOfBookingDay } from "../../../../../lib/timezone";
 import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
 import { TIME_SLOTS } from "../../../../../lib/timeSlots";
 
-const toDateInputValue = (value) => {
-  if (!value) return "";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const tzOffsetMs = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 10);
-};
-
 const ACTIVE_STATUSES = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
 
 const normalizeBookingStatus = (value) =>
   value === "CONFIRMED" ? "CHECKED-IN" : value;
-
 
 function normalizeRoomStatus(value) {
   if (value === "ACTIVE" || value === "INACTIVE") return value;
@@ -40,15 +32,16 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url, "http://localhost");
     const dateParam = searchParams.get("date");
-    const targetDate = dateParam ? new Date(dateParam) : new Date();
-    if (Number.isNaN(targetDate.getTime())) {
+    const fallbackDate = startOfBookingDay(new Date());
+    const targetDate = dateParam ? parseBookingDate(dateParam) : fallbackDate;
+    if (!targetDate) {
       return NextResponse.json({ message: "Invalid date" }, { status: 400 });
     }
-
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
+    const startOfDay = targetDate;
+    const endOfDay = addBookingDays(startOfDay, 1);
+    if (!endOfDay) {
+      return NextResponse.json({ message: "Invalid date" }, { status: 400 });
+    }
 
     await connectMongoDB();
     await expireStaleBookings();
@@ -97,7 +90,7 @@ export async function GET(request) {
       };
     });
 
-    const responseDate = dateParam || toDateInputValue(startOfDay);
+    const responseDate = dateParam || formatBookingDateInput(startOfDay);
 
     return NextResponse.json({
       date: responseDate,
@@ -112,3 +105,4 @@ export async function GET(request) {
     );
   }
 }
+

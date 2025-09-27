@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../../lib/mongodb";
+import { addBookingDays, parseBookingDate, parseBookingDateTime, startOfBookingDay } from "../../../../lib/timezone";
 import Booking from "../../../../models/booking";
 import {
   bookingExpiryWindowMs,
@@ -27,18 +28,19 @@ export async function GET(req) {
       );
     }
 
-    const day = new Date(dateStr);
-    if (isNaN(day.getTime())) {
+    const day = parseBookingDate(dateStr);
+    if (!day) {
       return NextResponse.json({ message: "Invalid date" }, { status: 400 });
     }
-    day.setHours(0, 0, 0, 0);
+    const nextDay = addBookingDays(day, 1);
+    if (!nextDay) {
+      return NextResponse.json({ message: "Invalid date" }, { status: 400 });
+    }
 
     await connectMongoDB();
     await expireStaleBookings();
 
     const cutoff = new Date(Date.now() - bookingExpiryWindowMs);
-    const nextDay = new Date(day);
-    nextDay.setDate(nextDay.getDate() + 1);
     const bookings = await Booking.find({
       "room.number": String(roomNumber).toUpperCase(),
       date: { $gte: day, $lt: nextDay },
@@ -55,15 +57,15 @@ export async function GET(req) {
 
     // Filter out past slots if same day
     const now = new Date();
-    const isToday = now.toDateString() === day.toDateString();
+    const today = startOfBookingDay(now);
+    const isToday = today ? today.getTime() === day.getTime() : false;
     const available = ALL_SLOTS.filter((slot) => {
       if (occupied.has(slot)) return false;
       if (!isToday) return true;
       // keep only slots ending in the future when it's today
       const end = slot.split("-")[1];
-      const [eh, em] = end.split(":").map(Number);
-      const slotEnd = new Date(day);
-      slotEnd.setHours(eh, em, 0, 0);
+      const slotEnd = parseBookingDateTime(dateStr, end);
+      if (!slotEnd) return false;
       return slotEnd.getTime() > now.getTime();
     });
 
