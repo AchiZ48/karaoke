@@ -31,7 +31,7 @@ export default function Navbar() {
         { href: "/my-bookings", label: "My Booking" },
 
         {
-          action: () => signOut(),
+          action: () => signOut({ callbackUrl: "/" }),
           label: "Log out",
           button: true,
           variant: "danger",
@@ -47,7 +47,7 @@ export default function Navbar() {
         { href: "/admin", label: "Admin Panel" },
         ,
         {
-          action: () => signOut(),
+          action: () => signOut({ callbackUrl: "/" }),
           label: "Log out",
           button: true,
           variant: "danger",
@@ -258,3 +258,4 @@ export default function Navbar() {
     </>
   );
 }
+
