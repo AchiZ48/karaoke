@@ -14,7 +14,7 @@ const promotionSchema = new Schema(
   { timestamps: true },
 );
 
-promotionSchema.index({ code: 1 });
 promotionSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
 
 export default models.Promotion || model("Promotion", promotionSchema);
+
