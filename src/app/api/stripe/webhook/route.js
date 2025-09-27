@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { connectMongoDB } from "../../../../../lib/mongodb";
 import Booking from "../../../../../models/booking";
+import { sendBookingPaidEmail } from "../../../../../lib/bookingEmails";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,6 +13,16 @@ const stripe = stripeSecret
   ? new Stripe(stripeSecret, { apiVersion: "2024-06-20" })
   : null;
 
+
+async function notifyPaid(filter) {
+  const booking = await Booking.findOne(filter);
+  if (!booking) return;
+  try {
+    await sendBookingPaidEmail(booking);
+  } catch (err) {
+    console.error("[MAILER] Failed to send booking paid email from webhook", err);
+  }
+}
 export async function POST(req) {
   if (!stripe || !webhookSecret) {
     return new NextResponse("Stripe not configured", { status: 500 });
@@ -34,9 +45,10 @@ export async function POST(req) {
         const intent = event.data.object;
         const bookingId = intent?.metadata?.bookingId;
         await connectMongoDB();
-        let res;
+
+        let handled = false;
         if (bookingId) {
-          res = await Booking.updateOne(
+          const res = await Booking.updateOne(
             { bookingId },
             { $set: { status: "PAID" } },
           );
@@ -46,11 +58,16 @@ export async function POST(req) {
             res.matchedCount,
             res.modifiedCount,
           );
+          if (res.matchedCount > 0) {
+            handled = true;
+            if (res.modifiedCount > 0) {
+              await notifyPaid({ bookingId });
+            }
+          }
         }
-        if (!res || res.matchedCount === 0) {
-          // fallback by paymentIntentId
+        if (!handled) {
           const pid = intent.id;
-          res = await Booking.updateOne(
+          const res = await Booking.updateOne(
             { paymentIntentId: pid },
             { $set: { status: "PAID" } },
           );
@@ -60,6 +77,9 @@ export async function POST(req) {
             res.matchedCount,
             res.modifiedCount,
           );
+          if (res.matchedCount > 0 && res.modifiedCount > 0) {
+            await notifyPaid({ paymentIntentId: pid });
+          }
         }
         break;
       }
