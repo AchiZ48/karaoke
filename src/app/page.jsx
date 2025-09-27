@@ -1,5 +1,6 @@
 "use client";
 import { useSession, signIn } from "next-auth/react";
+import Link from "next/link";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -32,12 +33,12 @@ export default function Home() {
               Login
             </button>
           ) : (
-            <button
+            <Link
               href="/booking"
               className="max-w-50 px-8 py-2 bg-gradient-to-r from-[#7b7bbd] to-[#2d184a] text-white rounded-lg font-semibold shadow hover:opacity-90 transition mb-8"
             >
               Booking
-            </button>
+            </Link>
           )}
         </div>
         {/* Promotion Box */}

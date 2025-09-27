@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+﻿import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectMongoDB } from "../../../../../lib/mongodb";
 import User from "../../../../../models/user";
@@ -21,14 +21,14 @@ export const authOptions = {
         if (!email || !password) return null;
 
         await connectMongoDB();
-        // ถ้าใน schema ใส่ select:false ที่ password ให้เติม .select("+password")
+        // à¸–à¹‰à¸²à¹ƒà¸™ schema à¹ƒà¸ªà¹ˆ select:false à¸—à¸µà¹ˆ password à¹ƒà¸«à¹‰à¹€à¸•à¸´à¸¡ .select("+password")
         const user = await User.findOne({ email }).lean();
         if (!user || !user.password) return null;
 
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) return null;
 
-        // คืน plain object พร้อม role
+        // à¸„à¸·à¸™ plain object à¸žà¸£à¹‰à¸­à¸¡ role
         return {
           id: user._id.toString(),
           name: user.name || "",
@@ -50,8 +50,28 @@ export const authOptions = {
     signIn: "/login",
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(`${baseUrl}/api/auth/signout`)) {
+        return baseUrl;
+      }
+
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+
+      try {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.origin === baseUrl) {
+          return url;
+        }
+      } catch (error) {
+        return baseUrl;
+      }
+
+      return baseUrl;
+    },
     async jwt({ token, user }) {
-      // ใส่ข้อมูล user ลง token ตอนล็อกอิน
+      // à¹ƒà¸ªà¹ˆà¸‚à¹‰à¸­à¸¡à¸¹à¸¥ user à¸¥à¸‡ token à¸•à¸­à¸™à¸¥à¹‡à¸­à¸à¸­à¸´à¸™
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -59,7 +79,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      // ส่ง role ไปฝั่ง client
+      // à¸ªà¹ˆà¸‡ role à¹„à¸›à¸à¸±à¹ˆà¸‡ client
       if (session?.user) {
         session.user.id = token.id;
         session.user.role = token.role;
@@ -71,3 +91,6 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
+
+
+

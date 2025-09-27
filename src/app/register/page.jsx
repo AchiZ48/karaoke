@@ -124,7 +124,7 @@ function Register() {
                 onChange={(e) => setName(e.target.value)}
                 className="block p-3 w-full border border-gray-300 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 type="text"
-                placeholder="Enter your Mame"
+                placeholder="Enter your Name"
                 autoComplete="name"
               />
             </div>

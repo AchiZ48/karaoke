@@ -154,8 +154,11 @@ export async function GET(request) {
       Promotion.find({}).sort({ createdAt: -1 }).lean(),
     ]);
 
+    const Onpending = await Booking.countDocuments({ status: "PENDING" });
+const Onpaid    = await Booking.countDocuments({ status: "PAID" });
+
     return NextResponse.json({
-      stats: { totalBookings, totalRevenue, activeCustomers, activeRooms },
+      stats: { totalBookings, totalRevenue, activeCustomers, activeRooms,Onpending, Onpaid },
       trend,
       scale,
       recentBookings,

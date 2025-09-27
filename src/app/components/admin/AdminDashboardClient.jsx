@@ -50,7 +50,6 @@ const BOOKING_STATUS_VALUES = [
   "PAID",
   "COMPLETED",
   "CANCELLED",
-  "REFUNDED",
 ];
 
 const BOOKING_STATUS_LABELS = {
@@ -59,7 +58,6 @@ const BOOKING_STATUS_LABELS = {
   PAID: "Paid",
   COMPLETED: "Completed",
   CANCELLED: "Cancelled",
-  REFUNDED: "Refunded",
 };
 
 const getBookingStatusLabel = (status) => {
@@ -460,7 +458,19 @@ export default function AdminDashboardClient({
               </div>
 
               {/* Stats */}
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 mb-6">
+                <StatCard
+                  icon="⏳"
+                  value={stats?.Onpending ?? 0}
+                  label="On pending"
+                  changeType="positive"
+                />
+                <StatCard
+                  icon="💸"
+                  value={stats?.Onpaid ?? 0}
+                  label="On paid"
+                  changeType="positive"
+                />
                 <StatCard
                   icon="📅"
                   value={stats?.totalBookings ?? 0}
@@ -1472,7 +1482,6 @@ function StatusBadge({ status }) {
     PAID: "bg-sky-500/15 text-sky-300",
     COMPLETED: "bg-violet-500/15 text-violet-300",
     CANCELLED: "bg-rose-500/15 text-rose-300",
-    REFUNDED: "bg-rose-500/15 text-rose-300",
   };
   const classes = map[normalized] || "bg-white/10 text-white/70";
   return (
