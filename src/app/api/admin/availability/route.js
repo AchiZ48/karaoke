@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { connectMongoDB } from "../../../../../lib/mongodb";
@@ -7,7 +7,18 @@ import Room from "../../../../../models/room";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
 import { TIME_SLOTS } from "../../../../../lib/timeSlots";
 
-const ACTIVE_STATUSES = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const tzOffsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+};
+
+const ACTIVE_STATUSES = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
+
+const normalizeBookingStatus = (value) =>
+  value === "CONFIRMED" ? "CHECKED-IN" : value;
 
 
 function normalizeRoomStatus(value) {
@@ -78,7 +89,7 @@ export async function GET(request) {
             slot,
             status: booking ? "BOOKED" : "AVAILABLE",
             bookingId: booking?.bookingId ?? null,
-            bookingStatus: booking?.status ?? null,
+            bookingStatus: normalizeBookingStatus(booking?.status ?? null),
             customerName: booking?.customerName ?? null,
             customerPhone: booking?.customerPhone ?? null,
           };
@@ -86,8 +97,10 @@ export async function GET(request) {
       };
     });
 
+    const responseDate = dateParam || toDateInputValue(startOfDay);
+
     return NextResponse.json({
-      date: startOfDay.toISOString().slice(0, 10),
+      date: responseDate,
       timeSlots: TIME_SLOTS,
       rooms,
     });

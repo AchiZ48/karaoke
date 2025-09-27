@@ -7,7 +7,7 @@ import Room from "../../../../../models/room";
 import Promotion from "../../../../../models/promotion";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
 
-const TREND_STATUSES = ["CONFIRMED", "PAID", "COMPLETED"];
+const TREND_STATUSES = ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
 const ACTIVE_STATUS_MATCH = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
 
 const normalizeRoomStatus = (value) => {
@@ -170,4 +170,5 @@ export async function GET(request) {
     );
   }
 }
+
 

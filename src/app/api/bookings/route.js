@@ -142,7 +142,7 @@ export async function POST(req) {
     }
 
     // Ensure slot availability (no existing active booking for same room/date/slot)
-    const activeStatuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+    const activeStatuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
     const nextDay = new Date(reqDate);
     nextDay.setDate(nextDay.getDate() + 1);
     const exists = await Booking.exists({
@@ -250,3 +250,4 @@ export async function POST(req) {
     );
   }
 }
+

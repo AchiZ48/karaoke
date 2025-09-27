@@ -1,4 +1,4 @@
-// components/admin/AdminDashboardClient.jsx
+﻿// components/admin/AdminDashboardClient.jsx
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,14 @@ const formatBaht = (amount) =>
     maximumFractionDigits: 0,
   }).format(Number(amount ?? 0));
 
+
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const tzOffsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+};
 
 const ROOM_STATUS_OPTIONS = [
   { value: "ACTIVE", label: "Active" },
@@ -33,8 +41,54 @@ const normalizeRoomStatus = (value) => {
   return value || "ACTIVE";
 };
 
-const normalizeRoom = (room) =>
-  room ? { ...room, status: normalizeRoomStatus(room.status) } : room;
+const normalizeBookingStatus = (status) =>
+  status === "CONFIRMED" ? "CHECKED-IN" : status;
+
+const BOOKING_STATUS_VALUES = [
+  "PENDING",
+  "CHECKED-IN",
+  "PAID",
+  "COMPLETED",
+  "CANCELLED",
+  "REFUNDED",
+];
+
+const BOOKING_STATUS_LABELS = {
+  PENDING: "Pending",
+  "CHECKED-IN": "Checked-In",
+  PAID: "Paid",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  REFUNDED: "Refunded",
+};
+
+const getBookingStatusLabel = (status) => {
+  const normalized = normalizeBookingStatus(status);
+  return BOOKING_STATUS_LABELS[normalized] || normalized || "-";
+};
+
+const normalizeBooking = (booking) =>
+  booking
+    ? { ...booking, status: normalizeBookingStatus(booking.status) }
+    : booking;
+
+const normalizeBookings = (items) =>
+  Array.isArray(items) ? items.map((booking) => normalizeBooking(booking)) : [];
+
+const normalizeRoom = (room) => {
+  if (!room) return room;
+  const normalizedRoom = {
+    ...room,
+    status: normalizeRoomStatus(room.status),
+  };
+  if (Array.isArray(room.slots)) {
+    normalizedRoom.slots = room.slots.map((slot) => ({
+      ...slot,
+      bookingStatus: normalizeBookingStatus(slot.bookingStatus),
+    }));
+  }
+  return normalizedRoom;
+};
 
 const normalizeRooms = (items) =>
   Array.isArray(items) ? items.map((room) => normalizeRoom(room)) : [];
@@ -47,12 +101,12 @@ export default function AdminDashboardClient({
   initialPromotions,
 }) {
   const [adminSection, setAdminSection] = useState("dashboard");
-  const [bookings, setBookings] = useState(initialBookings || []);
+  const [bookings, setBookings] = useState(() => normalizeBookings(initialBookings));
   const [rooms, setRooms] = useState(() => normalizeRooms(initialRooms));
   const [promotions, setPromotions] = useState(initialPromotions || []);
   const [stats, setStats] = useState(initialStats || {});
   const [trend, setTrend] = useState(initialTrend || []);
-  const [trendScale, setTrendScale] = useState("month");
+  const [trendScale, setTrendScale] = useState("day");
   const [trendLoading, setTrendLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
@@ -71,7 +125,7 @@ export default function AdminDashboardClient({
   const { showToast } = useToast();
 
   const [availabilityDate, setAvailabilityDate] = useState(() =>
-    new Date().toISOString().slice(0, 10),
+    toDateInputValue(new Date()),
   );
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilityRooms, setAvailabilityRooms] = useState([]);
@@ -99,7 +153,7 @@ export default function AdminDashboardClient({
       if (updateAll) {
         setStats(data.stats || {});
         if (Array.isArray(data.recentBookings))
-          setBookings(data.recentBookings);
+          setBookings(normalizeBookings(data.recentBookings));
         if (Array.isArray(data.rooms)) setRooms(normalizeRooms(data.rooms));
         if (Array.isArray(data.promotions)) setPromotions(data.promotions);
       }
@@ -282,7 +336,9 @@ export default function AdminDashboardClient({
           b.room?.number?.toLowerCase().includes(q),
       );
     }
-    if (bookingStatus) list = list.filter((b) => b.status === bookingStatus);
+    if (bookingStatus) {
+      list = list.filter((b) => normalizeBookingStatus(b.status) === bookingStatus);
+    }
     return list;
   }, [bookings, bookingSearch, bookingStatus]);
 
@@ -461,7 +517,7 @@ export default function AdminDashboardClient({
                   setBookingDraft({
                     bookingId: b.bookingId,
                     date: b.date
-                      ? new Date(b.date).toISOString().slice(0, 10)
+                      ? toDateInputValue(b.date)
                       : "",
                     timeSlot: b.timeSlot,
                   });
@@ -489,15 +545,13 @@ export default function AdminDashboardClient({
                   className="px-2 py-1 rounded bg-white/10 border border-white/10"
                 >
                   <option value="" className="bg-neutral-800 text-white">All Status</option>
-                  {[
-                    "PENDING",
-                    "CONFIRMED",
-                    "PAID",
-                    "COMPLETED",
-                    "CANCELLED",
-                  ].map((s) => (
-                    <option key={s} value={s} className="bg-neutral-800 text-white">
-                      {s}
+                  {BOOKING_STATUS_VALUES.map((value) => (
+                    <option
+                      key={value}
+                      value={value}
+                      className="bg-neutral-800 text-white"
+                    >
+                      {getBookingStatusLabel(value)}
                     </option>
                   ))}
                 </select>
@@ -510,7 +564,7 @@ export default function AdminDashboardClient({
                   setBookingDraft({
                     bookingId: b.bookingId,
                     date: b.date
-                      ? new Date(b.date).toISOString().slice(0, 10)
+                      ? toDateInputValue(b.date)
                       : "",
                     timeSlot: b.timeSlot,
                   });
@@ -521,14 +575,14 @@ export default function AdminDashboardClient({
                     const res = await fetch(`/api/bookings/${bookingId}`, {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ status: newStatus }),
+                      body: JSON.stringify({ status: normalizeBookingStatus(newStatus) }),
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data?.message || "Failed");
                     setBookings((prev) =>
                       prev.map((b) =>
                         b.bookingId === bookingId
-                          ? { ...b, status: newStatus }
+                          ? { ...b, status: normalizeBookingStatus(newStatus) }
                           : b,
                       ),
                     );
@@ -555,7 +609,7 @@ export default function AdminDashboardClient({
                     type="date"
                     value={availabilityDate}
                     onChange={(e) => {
-                      const value = e.target.value || new Date().toISOString().slice(0, 10);
+                      const value = e.target.value || toDateInputValue(new Date());
                       setAvailabilityDate(value);
                     }}
                     className="px-3 py-2 rounded-lg border border-white/10 bg-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -1411,18 +1465,19 @@ function QuickAction({ onClick, icon, text }) {
 }
 
 function StatusBadge({ status }) {
+  const normalized = normalizeBookingStatus(status);
   const map = {
-    CONFIRMED: "bg-emerald-500/15 text-emerald-300",
+    "CHECKED-IN": "bg-emerald-500/15 text-emerald-300",
     PENDING: "bg-amber-500/15 text-amber-300",
     PAID: "bg-sky-500/15 text-sky-300",
     COMPLETED: "bg-violet-500/15 text-violet-300",
     CANCELLED: "bg-rose-500/15 text-rose-300",
+    REFUNDED: "bg-rose-500/15 text-rose-300",
   };
+  const classes = map[normalized] || "bg-white/10 text-white/70";
   return (
-    <span
-      className={`inline-flex rounded-full px-2 py-0.5 text-xs ${map[status] || "bg-white/10 text-white/70"}`}
-    >
-      {status}
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${classes}`}>
+      {getBookingStatusLabel(normalized)}
     </span>
   );
 }
@@ -1484,7 +1539,7 @@ function AdminBookingsTable({
                 </td>
                 <td className="px-4 py-2">
                   <div>
-                    {b.date ? new Date(b.date).toISOString().slice(0, 10) : "-"}
+                    {b.date ? toDateInputValue(b.date) : "-"}
                   </div>
                   <div className="text-xs text-neutral-500 dark:text-white/60">
                     {b.timeSlot}
@@ -1508,21 +1563,19 @@ function AdminBookingsTable({
                     {onStatusChange && (
                       <select
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
-                        value={b.status}
+                        value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
                         }
                         title="Change status"
                       >
-                        {[
-                          "PENDING",
-                          "CONFIRMED",
-                          "PAID",
-                          "COMPLETED",
-                          "CANCELLED",
-                        ].map((s) => (
-                          <option key={s} value={s} className="bg-neutral-800 text-white">
-                            {s}
+                        {BOOKING_STATUS_VALUES.map((value) => (
+                          <option
+                            key={value}
+                            value={value}
+                            className="bg-neutral-800 text-white"
+                          >
+                            {getBookingStatusLabel(value)}
                           </option>
                         ))}
                       </select>
@@ -1531,19 +1584,21 @@ function AdminBookingsTable({
                     {false && (
                       <select
                         className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
-                        value={b.status}
+                        value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
                         }
                         title="Change status"
                       >
-                        {["PENDING", "PAID", "COMPLETED", "CANCELLED"].map(
-                          (s) => (
-                            <option key={s} value={s} className="bg-neutral-800 text-white">
-                              {s}
-                            </option>
-                          ),
-                        )}
+                        {BOOKING_STATUS_VALUES.map((value) => (
+                          <option
+                            key={value}
+                            value={value}
+                            className="bg-neutral-800 text-white"
+                          >
+                            {getBookingStatusLabel(value)}
+                          </option>
+                        ))}
                       </select>
                     )}
                     {onStatusChange && (
@@ -1589,7 +1644,7 @@ function RoomAvailabilityTable({
   currentSlot,
   loading,
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   const highlightSlot = selectedDate === today ? currentSlot : null;
 
   return (
@@ -1874,7 +1929,7 @@ function AdminCustomersTable({ customers = [], onLoad }) {
                 <td className="px-4 py-2">{c.phone}</td>
                 <td className="px-4 py-2">
                   {c.createdAt
-                    ? new Date(c.createdAt).toISOString().slice(0, 10)
+                    ? toDateInputValue(c.createdAt)
                     : "-"}
                 </td>
               </tr>
@@ -1982,3 +2037,4 @@ function AdminReports({ trend = [], stats = {} }) {
   );
 }
 // ...existing code...
+

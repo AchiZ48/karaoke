@@ -44,7 +44,7 @@ export async function GET(req) {
       date: { $gte: day, $lt: nextDay },
       $or: [
         // Consider these always occupying
-        { status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] } },
+        { status: { $in: ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"] } },
         // Pending but not expired (created within cutoff)
         { status: "PENDING", createdAt: { $gte: cutoff } },
       ],
@@ -76,3 +76,4 @@ export async function GET(req) {
     );
   }
 }
+

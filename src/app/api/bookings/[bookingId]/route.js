@@ -5,7 +5,11 @@ import { connectMongoDB } from "../../../../../lib/mongodb";
 import Booking from "../../../../../models/booking";
 import Room from "../../../../../models/room";
 import { expireStaleBookings } from "../../../../../lib/bookingCleanup";
-import { sendBookingConfirmationEmail } from "../../../../../lib/bookingEmails";
+import {
+  sendBookingCancelledEmail,
+  sendBookingConfirmationEmail,
+  sendBookingPaidEmail,
+} from "../../../../../lib/bookingEmails";
 
 export async function GET(_req, context) {
   try {
@@ -53,6 +57,9 @@ export async function PATCH(req, context) {
     const booking = await Booking.findOne({ bookingId });
     if (!booking)
       return NextResponse.json({ message: "Not found" }, { status: 404 });
+    const previousStatus = booking.status;
+    const previousStatusNormalized =
+      previousStatus === "CONFIRMED" ? "CHECKED-IN" : previousStatus;
 
     const isOwner =
       session.user?.email && booking.customerEmail === session.user.email;
@@ -70,14 +77,52 @@ export async function PATCH(req, context) {
       }
       booking.status = "CANCELLED";
       await booking.save();
+      if (previousStatusNormalized !== "CANCELLED") {
+        await sendBookingCancelledEmail(booking);
+      }
       return NextResponse.json({ booking });
     }
 
     if (typeof desiredStatus === "string") {
       if (!isAdmin)
         return NextResponse.json({ message: "Admin only" }, { status: 403 });
-      booking.status = desiredStatus;
+      const nextStatus = desiredStatus.trim().toUpperCase();
+      const normalizedStatus =
+        nextStatus === "CONFIRMED" ? "CHECKED-IN" : nextStatus;
+      const validStatuses = [
+        "PENDING",
+        "CHECKED-IN",
+        "PAID",
+        "COMPLETED",
+        "CANCELLED",
+        "REFUNDED",
+      ];
+      if (!validStatuses.includes(normalizedStatus)) {
+        return NextResponse.json({ message: "Invalid status" }, { status: 400 });
+      }
+      const alreadyStatus =
+        booking.status === normalizedStatus ||
+        (booking.status === "CONFIRMED" && normalizedStatus === "CHECKED-IN");
+      if (alreadyStatus) {
+        if (booking.status !== normalizedStatus) {
+          booking.status = normalizedStatus;
+          await booking.save();
+        }
+        return NextResponse.json({ booking });
+      }
+      booking.status = normalizedStatus;
       await booking.save();
+      if (
+        normalizedStatus === "CANCELLED" &&
+        previousStatusNormalized !== "CANCELLED"
+      ) {
+        await sendBookingCancelledEmail(booking);
+      } else if (
+        normalizedStatus === "PAID" &&
+        previousStatusNormalized === "PENDING"
+      ) {
+        await sendBookingPaidEmail(booking);
+      }
       return NextResponse.json({ booking });
     }
 
@@ -127,7 +172,7 @@ export async function PATCH(req, context) {
           );
       }
       // Check availability for same room/date/slot
-      const activeStatuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+      const activeStatuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
       const nextDay = new Date(reqDate);
       nextDay.setDate(nextDay.getDate() + 1);
       const exists = await Booking.exists({

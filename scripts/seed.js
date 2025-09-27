@@ -123,7 +123,7 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       enum: [
         "PENDING",
-        "CONFIRMED",
+        "CHECKED-IN",
         "PAID",
         "COMPLETED",
         "CANCELLED",
@@ -174,7 +174,7 @@ const timeSlots = [
   "18:00-20:00",
   "20:00-22:00",
 ];
-const statuses = ["PENDING", "CONFIRMED", "PAID", "COMPLETED"];
+const statuses = ["PENDING", "CHECKED-IN", "PAID", "COMPLETED"];
 const payments = ["CASH", "PROMPTPAY", "STRIPE"];
 const pad = (n, len = 4) => String(n).padStart(len, "0");
 const year = new Date().getFullYear();

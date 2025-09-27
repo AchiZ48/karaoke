@@ -24,8 +24,10 @@ export default async function AdminPage() {
     Room.countDocuments({ status: { $in: activeStatusMatch } }),
   ]);
 
+  const revenueStatuses = ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
+
   const revAgg = await Booking.aggregate([
-    { $match: { status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] } } },
+    { $match: { status: { $in: revenueStatuses } } },
     { $group: { _id: null, revenue: { $sum: "$totalAmount" } } },
   ]);
   const totalRevenue = revAgg[0]?.revenue ?? 0;
@@ -38,7 +40,7 @@ export default async function AdminPage() {
   const trendAgg = await Booking.aggregate([
     {
       $match: {
-        status: { $in: ["CONFIRMED", "PAID", "COMPLETED"] },
+        status: { $in: revenueStatuses },
         date: { $gte: startDate },
       },
     },

@@ -15,6 +15,21 @@ const roomSubSchema = new Schema(
   { _id: false }, // ไม่ต้องมี _id ใน subdocument
 );
 
+function ensureStatusEnum(schema) {
+  if (!schema) return;
+  const statusPath = schema.path("status");
+  if (!statusPath) return;
+  const ensureArrayValue = (arr, value) => {
+    if (Array.isArray(arr) && !arr.includes(value)) {
+      arr.push(value);
+    }
+  };
+  ["CHECKED-IN", "CONFIRMED"].forEach((value) => {
+    ensureArrayValue(statusPath.options?.enum, value);
+    ensureArrayValue(statusPath.enumValues, value);
+  });
+}
+
 const bookingSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
@@ -51,11 +66,12 @@ const bookingSchema = new Schema(
       required: true,
       enum: [
         "PENDING",
-        "CONFIRMED",
+        "CHECKED-IN",
         "PAID",
         "COMPLETED",
         "CANCELLED",
         "REFUNDED",
+        "CONFIRMED", // legacy alias retained for backward compatibility
       ],
       default: "PENDING",
       index: true,
@@ -90,5 +106,11 @@ bookingSchema.pre("save", function (next) {
 // ดัชนีเสริม (ถ้าต้อง query บ่อย)
 bookingSchema.index({ customerEmail: 1 });
 bookingSchema.index({ status: 1, date: -1 });
+
+if (models.Booking) {
+  ensureStatusEnum(models.Booking.schema);
+}
+
+ensureStatusEnum(bookingSchema);
 
 export default models.Booking || model("Booking", bookingSchema);
