@@ -19,9 +19,11 @@ export default async function AdminPage() {
 
   // ----- Stats -----
   const activeStatusMatch = ["ACTIVE", "AVAILABLE", "OCCUPIED"];
-  const [totalBookings, activeRooms] = await Promise.all([
+  const [totalBookings, activeRooms, Onpending, Onpaid] = await Promise.all([
     Booking.countDocuments({}),
     Room.countDocuments({ status: { $in: activeStatusMatch } }),
+    Booking.countDocuments({ status: "PENDING" }),
+    Booking.countDocuments({ status: "PAID" }),
   ]);
 
   const revenueStatuses = ["CHECKED-IN", "PAID", "COMPLETED", "CONFIRMED"];
@@ -84,6 +86,8 @@ export default async function AdminPage() {
         totalRevenue,
         activeCustomers,
         activeRooms,
+        Onpending,
+        Onpaid,
       }}
       initialTrend={initialTrend}
       initialBookings={initialBookings}
