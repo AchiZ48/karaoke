@@ -420,7 +420,7 @@ export default function AdminDashboardClient({
                 key={it.key}
                 onClick={() => setAdminSection(it.key)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition
-                  ${adminSection === it.key ? "bg-white/10" : "hover:bg-white/5"}`}
+                  ${adminSection === it.key ? "bg-neutral-100 dark:bg-white/10" : "hover:bg-neutral-100 dark:hover:bg-white/5"}`}
               >
                 <span>{it.icon}</span>
                 <span>{it.label}</span>
@@ -498,18 +498,18 @@ export default function AdminDashboardClient({
               </div>
 
               {/* Chart */}
-              <div className="rounded-2xl border border-white/10 p-4 mb-6">
+              <div className="rounded-2xl border border-neutral-200 dark:border-white/10 p-4 mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-base font-medium">Revenue Trend</div>
-                  <div className="flex items-center gap-2 text-xs text-white/70">
+                  <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-white/70">
                     {trendLoading && <span>Loading...</span>}
                     <select
                       value={trendScale}
                       onChange={(e) => setTrendScale(e.target.value)}
-                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className="rounded-lg border border-neutral-200 dark:border-white/20 bg-neutral-100 dark:bg-white/10 px-3 py-1 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                     >
-                      <option value="month" className="bg-neutral-800 text-white">Monthly (last 6 months)</option>
-                      <option value="day" className="bg-neutral-800 text-white">Daily (last 30 days)</option>
+                      <option value="month" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">Monthly (last 6 months)</option>
+                      <option value="day" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">Daily (last 30 days)</option>
                     </select>
                   </div>
                 </div>
@@ -547,19 +547,19 @@ export default function AdminDashboardClient({
                   value={bookingSearch}
                   onChange={(e) => setBookingSearch(e.target.value)}
                   placeholder="Search booking/customer/room"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   value={bookingStatus}
                   onChange={(e) => setBookingStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
-                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  <option value="" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">All Status</option>
                   {BOOKING_STATUS_VALUES.map((value) => (
                     <option
                       key={value}
                       value={value}
-                      className="bg-neutral-800 text-white"
+                      className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white"
                     >
                       {getBookingStatusLabel(value)}
                     </option>
@@ -612,7 +612,7 @@ export default function AdminDashboardClient({
               </h1>
               <div className="flex flex-wrap items-end gap-3 mb-4">
                 <div className="flex flex-col">
-                  <label className="text-xs uppercase tracking-wide text-white/60 mb-1">
+                  <label className="text-xs uppercase tracking-wide text-neutral-500 dark:text-white/60 mb-1">
                     Date
                   </label>
                   <input
@@ -622,7 +622,7 @@ export default function AdminDashboardClient({
                       const value = e.target.value || toDateInputValue(new Date());
                       setAvailabilityDate(value);
                     }}
-                    className="px-3 py-2 rounded-lg border border-white/10 bg-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-white/10 bg-neutral-100 dark:bg-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
                 <button
@@ -682,20 +682,20 @@ export default function AdminDashboardClient({
                   name="name"
                   placeholder="Name"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <input
                   name="number"
                   placeholder="Number"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   name="type"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
                   {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                    <option key={t} value={t} className="bg-neutral-800 text-white">
+                    <option key={t} value={t} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                       {t}
                     </option>
                   ))}
@@ -706,7 +706,7 @@ export default function AdminDashboardClient({
                   min="1"
                   placeholder="Capacity"
                   required
-                  className="w-28 px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="w-28 px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <input
                   name="price"
@@ -714,14 +714,14 @@ export default function AdminDashboardClient({
                   min="0"
                   placeholder="Price"
                   required
-                  className="w-28 px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="w-28 px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   name="status"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
                   {ROOM_STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                    <option key={opt.value} value={opt.value} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                       {opt.label}
                     </option>
                   ))}
@@ -751,16 +751,16 @@ export default function AdminDashboardClient({
                   value={roomSearch}
                   onChange={(e) => setRoomSearch(e.target.value)}
                   placeholder="Search rooms"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   value={roomStatus}
                   onChange={(e) => setRoomStatus(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
-                  <option value="" className="bg-neutral-800 text-white">All Status</option>
+                  <option value="" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">All Status</option>
                   {ROOM_STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                    <option key={opt.value} value={opt.value} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                       {opt.label}
                     </option>
                   ))}
@@ -868,20 +868,20 @@ export default function AdminDashboardClient({
                   name="code"
                   placeholder="Code"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <input
                   name="name"
                   placeholder="Name"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   name="discountType"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
                   {["PERCENT", "FIXED"].map((t) => (
-                    <option key={t} value={t} className="bg-neutral-800 text-white">
+                    <option key={t} value={t} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                       {t}
                     </option>
                   ))}
@@ -892,19 +892,19 @@ export default function AdminDashboardClient({
                   min="0"
                   placeholder="Value"
                   required
-                  className="w-24 px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="w-24 px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <input
                   name="startDate"
                   type="date"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <input
                   name="endDate"
                   type="date"
                   required
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <label className="flex items-center gap-1 text-sm">
                   <input name="isActive" type="checkbox" defaultChecked />{" "}
@@ -919,16 +919,16 @@ export default function AdminDashboardClient({
                   value={promoSearch}
                   onChange={(e) => setPromoSearch(e.target.value)}
                   placeholder="Search promotions"
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 />
                 <select
                   value={promoActive}
                   onChange={(e) => setPromoActive(e.target.value)}
-                  className="px-2 py-1 rounded bg-white/10 border border-white/10"
+                  className="px-2 py-1 rounded bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10"
                 >
-                  <option value="" className="bg-neutral-800 text-white">All</option>
-                  <option value="1" className="bg-neutral-800 text-white">Active</option>
-                  <option value="0" className="bg-neutral-800 text-white">Inactive</option>
+                  <option value="" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">All</option>
+                  <option value="1" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">Active</option>
+                  <option value="0" className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">Inactive</option>
                 </select>
               </div>
               <AdminPromotionsManager
@@ -1057,7 +1057,7 @@ export default function AdminDashboardClient({
               <label className="block mb-1">Date</label>
               <input
                 type="date"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 value={bookingDraft.date}
                 onChange={(e) =>
                   setBookingDraft((d) => ({ ...d, date: e.target.value }))
@@ -1068,7 +1068,7 @@ export default function AdminDashboardClient({
             <div>
               <label className="block mb-1">Time Slot</label>
               <select
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 value={bookingDraft.timeSlot}
                 onChange={(e) =>
                   setBookingDraft((d) => ({ ...d, timeSlot: e.target.value }))
@@ -1076,7 +1076,7 @@ export default function AdminDashboardClient({
               >
                 {timeSlots.map((t) => (
                   <option
-                    className="bg-neutral-800 text-white"
+                    className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white"
                     key={t}
                     value={t}
                     disabled={
@@ -1092,7 +1092,7 @@ export default function AdminDashboardClient({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                className="px-3 py-1 rounded bg-white/10"
+                className="px-3 py-1 rounded bg-neutral-100 dark:bg-white/10"
                 onClick={() => setShowBookingModal(false)}
               >
                 Cancel
@@ -1167,7 +1167,7 @@ export default function AdminDashboardClient({
             }}
           >
             <input
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               placeholder="Name"
               value={roomDraft.name}
               onChange={(e) =>
@@ -1176,7 +1176,7 @@ export default function AdminDashboardClient({
               required
             />
             <input
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               placeholder="Number"
               value={roomDraft.number}
               onChange={(e) =>
@@ -1185,14 +1185,14 @@ export default function AdminDashboardClient({
               required
             />
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               value={roomDraft.type}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, type: e.target.value }))
               }
             >
               {["STANDARD", "PREMIUM", "DELUXE", "VIP"].map((t) => (
-                <option key={t} value={t} className="bg-neutral-800 text-white">
+                <option key={t} value={t} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                   {t}
                 </option>
               ))}
@@ -1201,7 +1201,7 @@ export default function AdminDashboardClient({
               <input
                 type="number"
                 min="1"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 placeholder="Capacity"
                 value={roomDraft.capacity}
                 onChange={(e) =>
@@ -1215,7 +1215,7 @@ export default function AdminDashboardClient({
               <input
                 type="number"
                 min="0"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 placeholder="Price"
                 value={roomDraft.price}
                 onChange={(e) =>
@@ -1225,14 +1225,14 @@ export default function AdminDashboardClient({
               />
             </div>
             <select
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               value={roomDraft.status}
               onChange={(e) =>
                 setRoomDraft((d) => ({ ...d, status: normalizeRoomStatus(e.target.value) }))
               }
             >
               {ROOM_STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-neutral-800 text-white">
+                <option key={opt.value} value={opt.value} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                   {opt.label}
                 </option>
               ))}
@@ -1240,7 +1240,7 @@ export default function AdminDashboardClient({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                className="px-3 py-1 rounded bg-white/10"
+                className="px-3 py-1 rounded bg-neutral-100 dark:bg-white/10"
                 onClick={() => setShowRoomModal(false)}
               >
                 Cancel
@@ -1317,7 +1317,7 @@ export default function AdminDashboardClient({
             }}
           >
             <input
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               placeholder="Code"
               value={promoDraft.code}
               onChange={(e) =>
@@ -1326,7 +1326,7 @@ export default function AdminDashboardClient({
               required={!promoDraft._id}
             />
             <input
-              className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+              className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
               placeholder="Name"
               value={promoDraft.name}
               onChange={(e) =>
@@ -1336,14 +1336,14 @@ export default function AdminDashboardClient({
             />
             <div className="grid grid-cols-2 gap-2">
               <select
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 value={promoDraft.discountType}
                 onChange={(e) =>
                   setPromoDraft((d) => ({ ...d, discountType: e.target.value }))
                 }
               >
                 {["PERCENT", "FIXED"].map((t) => (
-                  <option key={t} value={t} className="bg-neutral-800 text-white">
+                  <option key={t} value={t} className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white">
                     {t}
                   </option>
                 ))}
@@ -1351,7 +1351,7 @@ export default function AdminDashboardClient({
               <input
                 type="number"
                 min="0"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 placeholder="Value"
                 value={promoDraft.discountValue}
                 onChange={(e) =>
@@ -1366,7 +1366,7 @@ export default function AdminDashboardClient({
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="date"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 value={
                   promoDraft.startDate
                     ? String(promoDraft.startDate).slice(0, 10)
@@ -1379,7 +1379,7 @@ export default function AdminDashboardClient({
               />
               <input
                 type="date"
-                className="w-full bg-white/10 border border-white/10 rounded px-2 py-1"
+                className="w-full bg-neutral-100 dark:bg-white/10 border border-neutral-200 dark:border-white/10 rounded px-2 py-1"
                 value={
                   promoDraft.endDate
                     ? String(promoDraft.endDate).slice(0, 10)
@@ -1404,7 +1404,7 @@ export default function AdminDashboardClient({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                className="px-3 py-1 rounded bg-white/10"
+                className="px-3 py-1 rounded bg-neutral-100 dark:bg-white/10"
                 onClick={() => setShowPromoModal(false)}
               >
                 Cancel
@@ -1428,7 +1428,7 @@ function Modal({ open, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-neutral-900 text-white border border-white/10 rounded-2xl p-4 w-full max-w-lg shadow-xl">
+      <div className="relative bg-white text-neutral-900 dark:bg-neutral-900 dark:text-white border border-neutral-200 dark:border-white/10 rounded-2xl p-4 w-full max-w-lg shadow-xl">
         {children}
       </div>
     </div>
@@ -1439,12 +1439,12 @@ function Modal({ open, onClose, children }) {
 
 function StatCard({ icon, value, label, change, changeType }) {
   return (
-    <div className="rounded-2xl border border-white/10 p-4">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 p-4">
       <div className="flex items-center gap-3">
         <div className="text-2xl">{icon}</div>
         <div>
           <div className="text-2xl font-semibold">{value}</div>
-          <div className="text-white/70 text-sm">{label}</div>
+          <div className="text-sm">{label}</div>
         </div>
       </div>
       {change && (
@@ -1466,7 +1466,7 @@ function QuickAction({ onClick, icon, text }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 rounded-2xl border border-white/10 px-4 py-3 hover:bg-white/5 transition"
+      className="flex items-center gap-3 rounded-2xl border border-neutral-200 dark:border-white/10 px-4 py-3 hover:bg-neutral-100 dark:hover:bg-white/5 transition"
     >
       <div className="text-xl">{icon}</div>
       <div className="text-sm">{text}</div>
@@ -1477,13 +1477,13 @@ function QuickAction({ onClick, icon, text }) {
 function StatusBadge({ status }) {
   const normalized = normalizeBookingStatus(status);
   const map = {
-    "CHECKED-IN": "bg-emerald-500/15 text-emerald-300",
-    PENDING: "bg-amber-500/15 text-amber-300",
-    PAID: "bg-sky-500/15 text-sky-300",
-    COMPLETED: "bg-violet-500/15 text-violet-300",
-    CANCELLED: "bg-rose-500/15 text-rose-300",
+    "CHECKED-IN": "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+    PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    PAID: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+    COMPLETED: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+    CANCELLED: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
   };
-  const classes = map[normalized] || "bg-white/10 text-white/70";
+  const classes = map[normalized] || "bg-neutral-100 dark:bg-white/10 text-neutral-600 dark:text-white/70";
   return (
     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${classes}`}>
       {getBookingStatusLabel(normalized)}
@@ -1500,11 +1500,11 @@ function AdminBookingsTable({
   onEditBooking,
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-white/10">
         <div className="text-base font-medium">{title}</div>
         {showFilters && (
-          <div className="text-sm text-white/60">Filters TODO</div>
+          <div className="text-sm text-neutral-500 dark:text-white/60">Filters TODO</div>
         )}
       </div>
       <div className="overflow-x-auto">
@@ -1571,7 +1571,7 @@ function AdminBookingsTable({
                     </button>
                     {onStatusChange && (
                       <select
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
@@ -1582,7 +1582,7 @@ function AdminBookingsTable({
                           <option
                             key={value}
                             value={value}
-                            className="bg-neutral-800 text-white"
+                            className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white"
                           >
                             {getBookingStatusLabel(value)}
                           </option>
@@ -1592,7 +1592,7 @@ function AdminBookingsTable({
 
                     {false && (
                       <select
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         value={normalizeBookingStatus(b.status)}
                         onChange={(e) =>
                           onStatusChange(b.bookingId, e.target.value)
@@ -1603,7 +1603,7 @@ function AdminBookingsTable({
                           <option
                             key={value}
                             value={value}
-                            className="bg-neutral-800 text-white"
+                            className="bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white"
                           >
                             {getBookingStatusLabel(value)}
                           </option>
@@ -1612,7 +1612,7 @@ function AdminBookingsTable({
                     )}
                     {onStatusChange && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onStatusChange(b.bookingId, "COMPLETED")}
                         title="End Booking"
                       >
@@ -1621,7 +1621,7 @@ function AdminBookingsTable({
                     )}
                     {false && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onDelete(b.bookingId)}
                         title="Delete"
                       >
@@ -1634,7 +1634,7 @@ function AdminBookingsTable({
             ))}
             {bookings.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-white/60">
+                <td colSpan={8} className="px-4 py-6 text-center text-neutral-500 dark:text-white/60">
                   No data
                 </td>
               </tr>
@@ -1657,17 +1657,17 @@ function RoomAvailabilityTable({
   const highlightSlot = selectedDate === today ? currentSlot : null;
 
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-neutral-200 dark:border-white/10 text-base font-medium">
         Availability Overview
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-white/5">
+        <table className="w-full text-sm ">
+          <thead className="bg-neutral-100 dark:bg-white/5">
             <tr>
-              <th className="px-4 py-2 text-left font-medium text-white/80">Room</th>
+              <th className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80">Room</th>
               {slots.map((slot) => (
-                <th key={slot} className="px-3 py-2 text-left font-medium text-white/70">
+                <th key={slot} className="px-3 py-2 text-left font-medium text-neutral-600 dark:text-white/70">
                   {slot}
                 </th>
               ))}
@@ -1678,10 +1678,10 @@ function RoomAvailabilityTable({
               const roomSlots = Array.isArray(room?.slots) ? room.slots : [];
               const roomKey = room?._id || room?.id || `${room?.number ?? "room"}-${index}`;
               return (
-                <tr key={roomKey} className="border-t border-white/10">
+                <tr key={roomKey} className="border-t border-neutral-200 dark:border-white/10">
                   <td className="px-4 py-3 align-top">
                     <div className="font-medium">{room?.name || `Room ${room?.number ?? index + 1}`}</div>
-                    <div className="text-xs text-white/60">
+                    <div className="text-xs text-neutral-500 dark:text-white/60">
                       #{room?.number || "-"} · {getRoomStatusLabel(room?.status)}
                     </div>
                   </td>
@@ -1692,8 +1692,8 @@ function RoomAvailabilityTable({
                     const cellClasses = [
                       "px-3 py-2 text-xs align-top min-w-[130px]",
                       isBooked
-                        ? "bg-red-500/10 text-red-200"
-                        : "bg-emerald-500/10 text-emerald-200",
+                        ? "bg-red-500/70 dark:bg-red-500/15 text-red-800 dark:text-red-200"
+                        : "bg-emerald-500/70 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-200",
                       isHighlight ? "ring-2 ring-violet-400" : "",
                     ]
                       .filter(Boolean)
@@ -1705,22 +1705,22 @@ function RoomAvailabilityTable({
                           {isBooked ? "Booked" : "Available"}
                         </div>
                         {slotInfo?.customerName && (
-                          <div className="text-[11px] text-white/70">
+                          <div className="text-[11px] text-black dark:text-white/70">
                             {slotInfo.customerName}
                           </div>
                         )}
                         {slotInfo?.bookingStatus && (
-                          <div className="text-[10px] uppercase tracking-wide text-white/40">
+                          <div className="text-[10px] uppercase tracking-wide text-black dark:text-white/40">
                             {slotInfo.bookingStatus}
                           </div>
                         )}
                         {slotInfo?.bookingId && (
-                          <div className="text-[10px] text-white/30">
+                          <div className="text-[10px] text-black dark:text-white/30">
                             #{slotInfo.bookingId}
                           </div>
                         )}
                         {!isBooked && (
-                          <div className="text-[10px] text-white/40 mt-1">
+                          <div className="text-[10px] text-black dark:text-white/40 mt-1">
                             Open slot
                           </div>
                         )}
@@ -1734,7 +1734,7 @@ function RoomAvailabilityTable({
               <tr>
                 <td
                   colSpan={slots.length + 1}
-                  className="px-4 py-6 text-center text-white/60"
+                  className="px-4 py-6 text-center text-neutral-500 dark:text-white/60"
                 >
                   {loading ? "Loading availability..." : "No rooms found"}
                 </td>
@@ -1749,13 +1749,13 @@ function RoomAvailabilityTable({
 
 function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-neutral-200 dark:border-white/10 text-base font-medium">
         Rooms
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-white/5">
+          <thead className="bg-neutral-100 dark:bg-white/5">
             <tr>
               {[
                 "Name",
@@ -1768,7 +1768,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-2 text-left font-medium text-white/80"
+                  className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80"
                 >
                   {h}
                 </th>
@@ -1777,7 +1777,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
           </thead>
           <tbody>
             {rooms.map((r) => (
-              <tr key={r._id} className="border-t border-white/10">
+              <tr key={r._id} className="border-t border-neutral-200 dark:border-white/10">
                 <td className="px-4 py-2">{r.name}</td>
                 <td className="px-4 py-2">{r.number}</td>
                 <td className="px-4 py-2">{r.type}</td>
@@ -1790,7 +1790,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                   <div className="flex items-center gap-2">
                     {onEdit && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onEdit(r)}
                       >
                         ✏️
@@ -1798,7 +1798,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
                     )}
                     {onDelete && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onDelete(r._id)}
                       >
                         🗑️
@@ -1810,7 +1810,7 @@ function AdminRoomsTable({ rooms = [], onStatusChange, onEdit, onDelete }) {
             ))}
             {rooms.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-white/60">
+                <td colSpan={7} className="px-4 py-6 text-center text-neutral-500 dark:text-white/60">
                   No data
                 </td>
               </tr>
@@ -1829,19 +1829,19 @@ function AdminPromotionsManager({
   onDelete,
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-neutral-200 dark:border-white/10 text-base font-medium">
         Promotions
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-white/5">
+          <thead className="bg-neutral-100 dark:bg-white/5">
             <tr>
               {["Code", "Name", "Type", "Value", "Active", "Actions"].map(
                 (h) => (
                   <th
                     key={h}
-                    className="px-4 py-2 text-left font-medium text-white/80"
+                    className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80"
                   >
                     {h}
                   </th>
@@ -1851,7 +1851,7 @@ function AdminPromotionsManager({
           </thead>
           <tbody>
             {promotions.map((p) => (
-              <tr key={p._id} className="border-t border-white/10">
+              <tr key={p._id} className="border-t border-neutral-200 dark:border-white/10">
                 <td className="px-4 py-2">{p.code}</td>
                 <td className="px-4 py-2">{p.name}</td>
                 <td className="px-4 py-2">{p.discountType}</td>
@@ -1867,7 +1867,7 @@ function AdminPromotionsManager({
                   <div className="flex items-center gap-2">
                     {onToggleStatus && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onToggleStatus(p._id)}
                       >
                         🔁
@@ -1875,7 +1875,7 @@ function AdminPromotionsManager({
                     )}
                     {onEdit && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onEdit(p)}
                       >
                         ✏️
@@ -1883,7 +1883,7 @@ function AdminPromotionsManager({
                     )}
                     {onDelete && (
                       <button
-                        className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/15"
+                        className="rounded-lg px-2 py-1 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15"
                         onClick={() => onDelete(p._id)}
                       >
                         🗑️
@@ -1895,7 +1895,7 @@ function AdminPromotionsManager({
             ))}
             {promotions.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-white/60">
+                <td colSpan={6} className="px-4 py-6 text-center text-neutral-500 dark:text-white/60">
                   No data
                 </td>
               </tr>
@@ -1912,18 +1912,18 @@ function AdminCustomersTable({ customers = [], onLoad }) {
     onLoad && onLoad();
   }, []);
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+    <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+      <div className="px-4 py-3 border-b border-neutral-200 dark:border-white/10 text-base font-medium">
         Customers
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-white/5">
+          <thead className="bg-neutral-100 dark:bg-white/5">
             <tr>
               {["Name", "Email", "Phone", "Joined"].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-2 text-left font-medium text-white/80"
+                  className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80"
                 >
                   {h}
                 </th>
@@ -1932,7 +1932,7 @@ function AdminCustomersTable({ customers = [], onLoad }) {
           </thead>
           <tbody>
             {customers.map((c) => (
-              <tr key={c.email} className="border-t border-white/10">
+              <tr key={c.email} className="border-t border-neutral-200 dark:border-white/10">
                 <td className="px-4 py-2">{c.name}</td>
                 <td className="px-4 py-2">{c.email}</td>
                 <td className="px-4 py-2">{c.phone}</td>
@@ -1945,7 +1945,7 @@ function AdminCustomersTable({ customers = [], onLoad }) {
             ))}
             {customers.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-white/60">
+                <td colSpan={4} className="px-4 py-6 text-center text-neutral-500 dark:text-white/60">
                   No customers
                 </td>
               </tr>
@@ -1980,39 +1980,39 @@ function AdminReports({ trend = [], stats = {} }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-white/10 p-4">
+      <div className="rounded-2xl border border-neutral-200 dark:border-white/10 p-4">
         <div className="text-base font-medium mb-2">Summary</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-          <div className="rounded-xl border border-white/10 p-3">
+          <div className="rounded-xl border border-neutral-200 dark:border-white/10 p-3">
             Total Bookings: {stats?.totalBookings ?? 0}
           </div>
-          <div className="rounded-xl border border-white/10 p-3">
+          <div className="rounded-xl border border-neutral-200 dark:border-white/10 p-3">
             Revenue: ฿{(stats?.totalRevenue ?? 0).toLocaleString()}
           </div>
-          <div className="rounded-xl border border-white/10 p-3">
+          <div className="rounded-xl border border-neutral-200 dark:border-white/10 p-3">
             Active Customers: {stats?.activeCustomers ?? 0}
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-white/10 overflow-hidden mt-2">
-        <div className="px-4 py-3 border-b border-white/10 text-base font-medium">
+      <div className="rounded-2xl border border-neutral-200 dark:border-white/10 overflow-hidden mt-2">
+        <div className="px-4 py-3 border-b border-neutral-200 dark:border-white/10 text-base font-medium">
           Monthly Revenue
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/5">
+            <thead className="bg-neutral-100 dark:bg-white/5">
               <tr>
-                <th className="px-4 py-2 text-left font-medium text-white/80">
+                <th className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80">
                   Month
                 </th>
-                <th className="px-4 py-2 text-left font-medium text-white/80">
+                <th className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-white/80">
                   Revenue (THB)
                 </th>
               </tr>
             </thead>
             <tbody>
               {trend.map((t) => (
-                <tr key={t.label} className="border-t border-white/10">
+                <tr key={t.label} className="border-t border-neutral-200 dark:border-white/10">
                   <td className="px-4 py-2">{t.label}</td>
                   <td className="px-4 py-2">
                     {(t.value ?? 0).toLocaleString()}
@@ -2023,7 +2023,7 @@ function AdminReports({ trend = [], stats = {} }) {
                 <tr>
                   <td
                     colSpan={2}
-                    className="px-4 py-6 text-center text-white/60"
+                    className="px-4 py-6 text-center text-neutral-500 dark:text-white/60"
                   >
                     No data
                   </td>
