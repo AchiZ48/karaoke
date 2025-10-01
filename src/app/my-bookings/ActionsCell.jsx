@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { useToast } from "../components/toast/ToastProvider";
 
@@ -293,7 +293,7 @@ export default function ActionsCell({ bookingId, status, paymentMethod }) {
           <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 text-neutral-900 shadow-xl">
             <h3 className="text-lg font-semibold mb-2">Cancel booking?</h3>
             <p className="text-sm mb-4">
-              Are you sure you want to cancel booking{" "}
+              Are you sure you want to cancel booking, It's can't be refund{" "}
               <span className="font-medium">{bookingId}</span>?
             </p>
             <div className="flex justify-end gap-3 text-sm">
